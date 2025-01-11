@@ -30,5 +30,5 @@
 JNIEXPORT jint JNICALL
 DEF_JNI_OnLoad(JavaVM *vm, void *reserved)
 {
-    return JNI_VERSION_1_2;
+    return JNI_VERSION_24;
 }
