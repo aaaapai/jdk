@@ -47,7 +47,7 @@ static int pixmapWidth = 0;
 static int pixmapHeight = 0;
 
 #define FONT_AWT_LOCK() \
-env = (JNIEnv *)JNU_GetEnv(jvm, JNI_VERSION_1_2); \
+env = (JNIEnv *)JNU_GetEnv(jvm, JNI_VERSION_24); \
 AWT_LOCK();
 
 int CreatePixmapAndGC (int width, int height)
