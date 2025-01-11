@@ -1251,7 +1251,7 @@ JNIEnv* JVMCIRuntime::init_shared_library_javavm(int* create_JavaVM_err, const c
 
     ResourceMark rm;
     JavaVMInitArgs vm_args;
-    vm_args.version = JNI_VERSION_1_2;
+    vm_args.version = JNI_VERSION_24;
     vm_args.ignoreUnrecognized = JNI_TRUE;
     JavaVMOption options[6];
     jlong javaVM_id = 0;
@@ -1273,7 +1273,7 @@ JNIEnv* JVMCIRuntime::init_shared_library_javavm(int* create_JavaVM_err, const c
     options[5].optionString = (char*) "_createvm_errorstr";
     options[5].extraInfo = (void*) err_msg;
 
-    vm_args.version = JNI_VERSION_1_2;
+    vm_args.version = JNI_VERSION_24;
     vm_args.options = options;
     vm_args.nOptions = sizeof(options) / sizeof(JavaVMOption);
 
