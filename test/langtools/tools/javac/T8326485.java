@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2025, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,10 +21,20 @@
  * questions.
  */
 
-package org.openjdk.bench.java.lang.foreign.xor;
+/*
+ * @test
+ * @bug 8326485
+ * @compile/fail/ref=T8326485.out -XDrawDiagnostics -XDdev T8326485.java
+ * @summary Assertion due to Type.addMetadata adding annotations to already-annotated type
+ */
 
-public interface XorOp {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 
-    void xor(byte[] src, int sOff, byte[] dst, int dOff, int len) throws Throwable;
-
+public class T8326485 {
+    @Ann
+    not.java.lang.@Ann String f;
 }
+
+@Target({ElementType.TYPE_USE, ElementType.FIELD})
+@interface Ann {}
