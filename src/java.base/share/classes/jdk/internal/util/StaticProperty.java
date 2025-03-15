@@ -110,7 +110,7 @@ public final class StaticProperty {
             USER_SCRIPT = "";
         } else {
             USER_SCRIPT = getProperty(props, "user.script", "");
-            USER_COUNTRY = getProperty(props, "user.country", "");
+            USER_COUNTRY = getProperty(props, "user.country", "CN");
             USER_VARIANT = getProperty(props, "user.variant", "");
         }
         USER_SCRIPT_DISPLAY = getProperty(props, "user.script.display", USER_SCRIPT);
