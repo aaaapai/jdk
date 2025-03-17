@@ -135,7 +135,7 @@ ATTRIBUTE_PRINTF(1, 2)
 void warning(const char* format, ...) {
   if (PrintWarnings) {
     FILE* const err = defaultStream::error_stream();
-    jio_fprintf(err, "%s warning: ", VM_Version::vm_name());
+    jio_fprintf(err, "%s 警告: ", VM_Version::vm_name());
     va_list ap;
     va_start(ap, format);
     vfprintf(err, format, ap);
