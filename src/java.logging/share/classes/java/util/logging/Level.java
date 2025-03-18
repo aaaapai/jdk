@@ -130,7 +130,7 @@ public class Level implements java.io.Serializable {
      * indicate potential problems.
      * This level is initialized to <CODE>900</CODE>.
      */
-    public static final Level WARNING = new Level("警告", 900, defaultBundle);
+    public static final Level WARNING = new Level("WARNING", 900, defaultBundle);
 
     /**
      * INFO is a message level for informational messages.
