@@ -651,7 +651,7 @@ void vm_exit_during_cds_dumping(const char* error, const char* message) {
 
 static void vm_notify_during_shutdown(const char* error, const char* message) {
   if (error != nullptr) {
-    tty->printf("吼！你的虚拟机在初始化的时候爆掉了");
+    tty->print_cr("Error occurred during initialization of VM");
     tty->print("%s", error);
     if (message != nullptr) {
       tty->print_cr(": %s", message);
