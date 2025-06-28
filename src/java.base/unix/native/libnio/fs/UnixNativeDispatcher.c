@@ -70,7 +70,7 @@
 // by defining binary compatible statx structs in this file and
 // not relying on included headers.
 
-#ifndef __GLIBC__
+#if !defined(__BIONIC__) && !defined(__GLIBC__)
 // Alpine doesn't know these types, define them
 typedef unsigned int       __uint32_t;
 typedef unsigned short     __uint16_t;
