@@ -2003,9 +2003,11 @@ const char* os::Linux::dll_path(void* lib) {
   assert(lib != nullptr, "dll_path parameter must not be null");
 
   int res_dli = ::dlinfo(lib, RTLD_DI_LINKMAP, &lmap);
+#ifndef __ANDROID__
   if (res_dli == 0) {
     l_path = lmap->l_name;
   }
+#endif
   return l_path;
 }
 
