@@ -1098,6 +1098,19 @@ void os::jvm_path(char *buf, jint buflen) {
   }
   fname = dli_fname;
 #endif // AIX
+#ifdef __ANDROID__
+  if (dli_fname[0] == '\0') {
+    return;
+  }
+
+  if (strchr(dli_fname, '/') == NULL) {
+    bool ok = read_so_path_from_maps(dli_fname, buf, buflen);
+    assert(ok, "unable to turn relative libjvm.so path into absolute");
+    return;
+  }
+
+  snprintf(buf, buflen, /* "%s/lib/%s/server/%s", java_home_var, cpu_arch, */ "%s", dli_fname);
+#else // !__ANDROID__
   char* rp = nullptr;
   if (fname[0] != '\0') {
     rp = os::realpath(fname, buf, buflen);
@@ -1145,6 +1158,7 @@ void os::jvm_path(char *buf, jint buflen) {
       }
     }
   }
+#endif
 
   strncpy(saved_jvm_path, buf, MAXPATHLEN);
   saved_jvm_path[MAXPATHLEN - 1] = '\0';
