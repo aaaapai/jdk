@@ -1988,17 +1988,19 @@ void * os::Linux::dll_load_in_vmthread(const char *filename, char *ebuf,
 }
 
 const char* os::Linux::dll_path(void* lib) {
+#ifdef RTLD_DI_LINKMAP
   struct link_map *lmap;
   const char* l_path = nullptr;
   assert(lib != nullptr, "dll_path parameter must not be null");
 
-#ifndef __ANDROID__
   int res_dli = ::dlinfo(lib, RTLD_DI_LINKMAP, &lmap);
   if (res_dli == 0) {
     l_path = lmap->l_name;
   }
-#endif
   return l_path;
+#else
+  return NULL;
+#endif
 }
 
 static unsigned count_newlines(const char* s) {
