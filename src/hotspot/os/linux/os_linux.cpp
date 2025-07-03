@@ -137,10 +137,10 @@
 
 #define MAX_PATH    (2 * K)
 
-#ifdef MUSL_LIBC
+#if defined(MUSL_LIBC) || (defined(__ANDROID__) && __ANDROID_API__ < 24)
 // dlvsym is not a part of POSIX
 // and musl libc doesn't implement it.
-static void *dlvsym(void *handle,
+void *dlvsym(void *handle,
                     const char *symbol,
                     const char *version) {
    // load the latest version of symbol
