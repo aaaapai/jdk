@@ -106,6 +106,8 @@ static int clock_tics_per_sec = 100;
 // Platform minimum stack allowed
 size_t os::_os_min_stack_allowed = PTHREAD_STACK_MIN;
 
+static bool read_so_path_from_maps(const char* so_name, char* buf, int buflen);
+
 // Check core dump limit and report possible place where core can be found
 void os::check_core_dump_prerequisites(char* buffer, size_t bufferSize, bool check_only) {
   if (!FLAG_IS_DEFAULT(CreateCoredumpOnCrash) && !CreateCoredumpOnCrash) {
@@ -1062,6 +1064,30 @@ bool os::same_files(const char* file1, const char* file2) {
 }
 
 static char saved_jvm_path[MAXPATHLEN] = {0};
+
+static bool read_so_path_from_maps(const char* so_name, char* buf, int buflen) {
+  FILE *fp = fopen("/proc/self/maps", "r");
+  assert(fp, "Failed to open /proc/self/maps");
+  if (!fp) {
+    return false;
+  }
+
+  char maps_buffer[2048];
+  while (fgets(maps_buffer, 2048, fp) != NULL) {
+    if (strstr(maps_buffer, so_name) == NULL) {
+      continue;
+    }
+
+    char *so_path = strchr(maps_buffer, '/');
+    so_path[strlen(so_path) - 1] = '\0'; // Cut trailing \n
+    jio_snprintf(buf, buflen, "%s", so_path);
+    fclose(fp);
+    return true;
+  }
+
+  fclose(fp);
+  return false;
+}
 
 // Find the full path to the current module, libjvm.so
 void os::jvm_path(char *buf, jint buflen) {
