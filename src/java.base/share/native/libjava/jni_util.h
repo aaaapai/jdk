@@ -358,7 +358,7 @@ void* getProcessHandle();
 
 jstring getLastErrorString(JNIEnv *env);
 
-JNIEXPORT char * JNICALL
+JNIEXPORT int JNICALL
 getErrorString(int err, char *buf, size_t len);
 
 #ifdef STATIC_BUILD
