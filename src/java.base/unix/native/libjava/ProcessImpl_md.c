@@ -339,13 +339,9 @@ throwIOExceptionImpl(JNIEnv *env, int errnum, const char *externalDetail, const 
     char tmpbuf[1024];
     jstring s;
 
-    if (errnum != 0) {
-        int ret = getErrorString(errnum, tmpbuf, sizeof(tmpbuf));
-        if (ret != EINVAL) {
-            errorDetail = tmpbuf;
-        } else {
-            errorDetail = "unknown";
-        }
+    if (errnum != EINVAL) {
+        getErrorString(errnum, tmpbuf, sizeof(tmpbuf));
+        errorDetail = tmpbuf;
     } else {
         errorDetail = "none";
     }
