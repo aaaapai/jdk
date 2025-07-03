@@ -3,6 +3,5 @@ SUNWprivate_1.1 {
     *;
 
   local:
-    _fini;
-    _init;
+    *;
 };
