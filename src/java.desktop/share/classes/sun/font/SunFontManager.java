@@ -3337,7 +3337,7 @@ public abstract class SunFontManager implements FontSupport, FontManagerForSGE {
     protected void addNativeFontFamilyNames(TreeMap<String, String> familyNames, Locale requestedLocale) { }
 
     public void register1dot0Fonts() {
-        String type1Dir = "/usr/openwin/lib/X11/fonts/Type1";
+        String type1Dir = "@TERMUX_PREFIX@/openwin/lib/X11/fonts/Type1";
         registerFontsInDir(type1Dir, true, Font2D.TYPE1_RANK, false, false);
     }
 
