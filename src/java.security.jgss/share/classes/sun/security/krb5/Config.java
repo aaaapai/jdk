@@ -929,7 +929,7 @@ public class Config {
             return PREF_FILE;
         }
 
-        return "/etc/krb5.conf";
+        return "@TERMUX_PREFIX@/etc/krb5.conf";
     }
 
     private static String unquote(String s) {
