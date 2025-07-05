@@ -63,9 +63,6 @@ AC_DEFUN([FLAGS_SETUP_SHARED_LIBS],
       # Default works for linux, might work on other platforms as well.
       SHARED_LIBRARY_FLAGS='-shared'
       SET_EXECUTABLE_ORIGIN='-Wl,-rpath,\$$ORIGIN[$]1'
-      if test "x$OPENJDK_TARGET_OS" = xlinux; then
-        SET_EXECUTABLE_ORIGIN="$SET_EXECUTABLE_ORIGIN -Wl,--disable-new-dtags"
-      fi
       SET_SHARED_LIBRARY_NAME='-Wl,-soname=[$]1'
 
       # arm specific settings
