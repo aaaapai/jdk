@@ -173,7 +173,7 @@ class FileSystemPreferences extends AbstractPreferences {
 
     private static void setupSystemRoot() {
         String systemPrefsDirName =
-          System.getProperty("java.util.prefs.systemRoot", "/etc/.java");
+          System.getProperty("java.util.prefs.systemRoot", "@TERMUX_PREFIX@/etc/.java");
         systemRootDir =
              new File(systemPrefsDirName, ".systemPrefs");
         // Attempt to create root dir if it does not yet exist.
