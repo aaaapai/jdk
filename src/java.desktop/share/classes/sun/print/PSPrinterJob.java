@@ -1539,7 +1539,7 @@ public class PSPrinterJob extends RasterPrinterJob {
         if (OSInfo.getOSType() == OSInfo.OSType.LINUX ||
                 OSInfo.getOSType() == OSInfo.OSType.MACOSX) {
             execCmd = new String[ncomps];
-            execCmd[n++] = "/usr/bin/lpr";
+            execCmd[n++] = "@TERMUX_PREFIX@/bin/lpr";
             if ((pFlags & PRINTER) != 0) {
                 execCmd[n++] = "-P" + printer;
             }
