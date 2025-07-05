@@ -71,7 +71,7 @@ AC_DEFUN([FLAGS_SETUP_SHARED_LIBS],
       # arm specific settings
       if test "x$OPENJDK_TARGET_CPU" = "xarm"; then
         # '-Wl,-z,origin' isn't used on arm.
-        SET_SHARED_LIBRARY_ORIGIN='-Wl,-rpath,\$$$$ORIGIN[$]1'
+        SET_SHARED_LIBRARY_ORIGIN="-Wl,-z,origin $SET_EXECUTABLE_ORIGIN"
       else
         SET_SHARED_LIBRARY_ORIGIN="-Wl,-z,origin $SET_EXECUTABLE_ORIGIN"
       fi
