@@ -1563,7 +1563,7 @@ public class PSPrinterJob extends RasterPrinterJob {
         } else {
             ncomps+=1; //add 1 arg for lp
             execCmd = new String[ncomps];
-            execCmd[n++] = "/usr/bin/lp";
+            execCmd[n++] = "@TERMUX_PREFIX@/bin/lp";
             execCmd[n++] = "-c";           // make a copy of the spool file
             if ((pFlags & PRINTER) != 0) {
                 execCmd[n++] = "-d" + printer;
