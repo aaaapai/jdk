@@ -75,10 +75,10 @@ public final class PrintServiceLookupProvider extends PrintServiceLookup
 
     // List of commands used to deal with the printer queues on AIX
     String[] lpNameComAix = {
-      "/usr/bin/lsallq",
-      "/usr/bin/lpstat -W -p|/usr/bin/expand|/usr/bin/cut -f1 -d' '",
-      "/usr/bin/lpstat -W -d|/usr/bin/expand|/usr/bin/cut -f1 -d' '",
-      "/usr/bin/lpstat -W -v"
+      "@TERMUX_PREFIX@/bin/lsallq",
+      "@TERMUX_PREFIX@/bin/lpstat -W -p|@TERMUX_PREFIX@/bin/expand|@TERMUX_PREFIX@/bin/cut -f1 -d' '",
+      "@TERMUX_PREFIX@/bin/lpstat -W -d|@TERMUX_PREFIX@/bin/expand|@TERMUX_PREFIX@/bin/cut -f1 -d' '",
+      "@TERMUX_PREFIX@/bin/lpstat -W -v"
     };
     private static final int aix_lsallq = 0;
     private static final int aix_lpstat_p = 1;
