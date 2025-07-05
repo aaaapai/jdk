@@ -92,7 +92,7 @@ desktop_uninstall_default_mime_handler_0 ()
 #
 desktop_uninstall_default_mime_handler ()
 {
-  for f in /usr/share/applications/defaults.list /usr/local/share/applications/defaults.list; do
+  for f in @TERMUX_PREFIX@/share/applications/defaults.list @TERMUX_PREFIX@/local/share/applications/defaults.list; do
     desktop_uninstall_default_mime_handler_0 "$f" "$@"
   done
 }
