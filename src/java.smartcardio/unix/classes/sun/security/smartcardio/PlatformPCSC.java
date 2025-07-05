@@ -49,11 +49,11 @@ class PlatformPCSC {
 
     // The architecture templates are for Debian-based systems: https://wiki.debian.org/Multiarch/Tuples
     // 32-bit arm differs from the pattern of the rest and has to be specified explicitly
-    private static final String[] LIB_TEMPLATES = { "/usr/$LIBISA/libpcsclite.so",
-                                                    "/usr/local/$LIBISA/libpcsclite.so",
-                                                    "/usr/lib/$ARCH-linux-gnu/libpcsclite.so",
-                                                    "/usr/lib/arm-linux-gnueabi/libpcsclite.so",
-                                                    "/usr/lib/arm-linux-gnueabihf/libpcsclite.so" };
+    private static final String[] LIB_TEMPLATES = { "@TERMUX_PREFIX@/$LIBISA/libpcsclite.so",
+                                                    "@TERMUX_PREFIX@/local/$LIBISA/libpcsclite.so",
+                                                    "@TERMUX_PREFIX@/lib/$ARCH-linux-gnu/libpcsclite.so",
+                                                    "@TERMUX_PREFIX@/lib/arm-linux-gnueabi/libpcsclite.so",
+                                                    "@TERMUX_PREFIX@/lib/arm-linux-gnueabihf/libpcsclite.so" };
     private static final String[] LIB_SUFFIXES = { ".1", ".0", "" };
     private static final String PCSC_FRAMEWORK = "/System/Library/Frameworks/PCSC.framework/Versions/Current/PCSC";
 
