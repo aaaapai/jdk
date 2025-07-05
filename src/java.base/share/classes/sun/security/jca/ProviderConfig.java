@@ -94,7 +94,7 @@ final class ProviderConfig {
     // avoid if not available (pre Solaris 10) to reduce startup time
     // or if disabled via system property
     private void checkSunPKCS11Solaris() {
-        File file = new File("/usr/lib/libpkcs11.so");
+        File file = new File("@TERMUX_PREFIX@/usr/lib/libpkcs11.so");
         if (file.exists() == false ||
             ("false".equalsIgnoreCase(System.getProperty
                 ("sun.security.pkcs11.enable-solaris")))) {
