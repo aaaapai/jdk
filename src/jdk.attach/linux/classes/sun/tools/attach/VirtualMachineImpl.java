@@ -51,7 +51,7 @@ public class VirtualMachineImpl extends HotSpotVirtualMachine {
     // location is the same for all processes, otherwise the tools
     // will not be able to find all Hotspot processes.
     // Any changes to this needs to be synchronized with HotSpot.
-    private static final Path TMPDIR = Path.of("/tmp");
+    private static final Path TMPDIR = Path.of("@TERMUX_PREFIX@/tmp");
 
     private static final Path PROC     = Path.of("/proc");
     private static final Path STATUS   = Path.of("status");
