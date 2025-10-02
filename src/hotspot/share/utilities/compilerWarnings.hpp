@@ -115,7 +115,7 @@
 // FORBID_NORETURN_C_FUNCTION deals with a clang issue.  See the clang
 // definition of FORBIDDEN_FUNCTION_NORETURN_ATTRIBUTE for more
 // details.  The default expands to `[[noreturn]]`.
-#define FORBID_C_FUNCTION(Signature, Noexcept, Alternative)     \
+#define FORBID_C_FUNCTION(Signature, Alternative)     \
   extern "C" {                                                  \
     [[deprecated(Alternative)]]                                 \
     Signature                                                   \
@@ -143,14 +143,14 @@
 #define FORBIDDEN_FUNCTION_IGNORE_CLANG_FORTIFY_WARNING
 #endif
 
-#define FORBID_IMPORTED_C_FUNCTION(Signature, Noexcept, Alternative) \
-  FORBID_C_FUNCTION(FORBIDDEN_FUNCTION_IMPORT_SPEC Signature, Noexcept, Alternative)
+#define FORBID_IMPORTED_C_FUNCTION(Signature, Alternative) \
+  FORBID_C_FUNCTION(FORBIDDEN_FUNCTION_IMPORT_SPEC Signature, Alternative)
 
-#define FORBID_NORETURN_C_FUNCTION(Signature, Noexcept, Alternative) \
-  FORBID_C_FUNCTION(FORBIDDEN_FUNCTION_NORETURN_ATTRIBUTE Signature, Noexcept, Alternative)
+#define FORBID_NORETURN_C_FUNCTION(Signature, Alternative) \
+  FORBID_C_FUNCTION(FORBIDDEN_FUNCTION_NORETURN_ATTRIBUTE Signature, Alternative)
 
-#define FORBID_IMPORTED_NORETURN_C_FUNCTION(Signature, Noexcept, Alternative) \
-  FORBID_NORETURN_C_FUNCTION(FORBIDDEN_FUNCTION_IMPORT_SPEC Signature, Noexcept, Alternative)
+#define FORBID_IMPORTED_NORETURN_C_FUNCTION(Signature, Alternative) \
+  FORBID_NORETURN_C_FUNCTION(FORBIDDEN_FUNCTION_IMPORT_SPEC Signature, Alternative)
 
 // A BEGIN/END_ALLOW_FORBIDDEN_FUNCTIONS pair establishes a scope in which the
 // deprecation warnings used to forbid the use of certain functions are
