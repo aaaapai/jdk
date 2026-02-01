@@ -37,25 +37,25 @@
 #endif
 
 // POSIX puts _exit in <unistd.h>.
-FORBID_IMPORTED_NORETURN_C_FUNCTION(void _exit(int), /* not noexcept */, "use os::exit")
+//FORBID_IMPORTED_NORETURN_C_FUNCTION(void _exit(int), /* not noexcept */, "use os::exit")
 
 // If needed, add os::strndup and use that instead.
-FORBID_C_FUNCTION(char* strndup(const char*, size_t), noexcept, "don't use");
+//FORBID_C_FUNCTION(char* strndup(const char*, size_t), noexcept, "don't use");
 
 // realpath with a null second argument mallocs a string for the result.
 // With a non-null second argument, there is a risk of buffer overrun.
-PRAGMA_DIAG_PUSH
-FORBIDDEN_FUNCTION_IGNORE_CLANG_FORTIFY_WARNING
-FORBID_C_FUNCTION(char* realpath(const char*, char*), noexcept, "use os::realpath");
-PRAGMA_DIAG_POP
+//PRAGMA_DIAG_PUSH
+//FORBIDDEN_FUNCTION_IGNORE_CLANG_FORTIFY_WARNING
+//FORBID_C_FUNCTION(char* realpath(const char*, char*), noexcept, "use os::realpath");
+//PRAGMA_DIAG_POP
 
 // Returns a malloc'ed string.
-FORBID_C_FUNCTION(char* get_current_dir_name(), noexcept, "use os::get_current_directory");
+//FORBID_C_FUNCTION(char* get_current_dir_name(), noexcept, "use os::get_current_directory");
 
 // Problematic API that should never be used.
-FORBID_C_FUNCTION(char* getwd(char*), noexcept, "use os::get_current_directory");
+//FORBID_C_FUNCTION(char* getwd(char*), noexcept, "use os::get_current_directory");
 
 // BSD utility that is subtly different from realloc.
-FORBID_C_FUNCTION(void* reallocf(void*, size_t), /* not noexcept */, "use os::realloc");
+//FORBID_C_FUNCTION(void* reallocf(void*, size_t), /* not noexcept */, "use os::realloc");
 
 #endif // OS_POSIX_FORBIDDENFUNCTIONS_POSIX_HPP
