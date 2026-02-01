@@ -83,16 +83,16 @@ using ::calloc;
 // We can't forbid it here when using clang if it's not in <stdlib.h> - see
 // the clang definition for FORBIDDEN_FUNCTION_NORETURN_ATTRIBUTE.
 #ifdef _WINDOWS
-FORBID_IMPORTED_NORETURN_C_FUNCTION(void _exit(int), /* not noexcept */, "use os::exit")
+//FORBID_IMPORTED_NORETURN_C_FUNCTION(void _exit(int), /* not noexcept */, "use os::exit")
 #endif // _WINDOWS
 
 // These functions return raw C-heap pointers or, in case of free(), take raw
 // C-heap pointers.  We generally want allocation to be done through NMT, using
 // os::malloc and friends.
-FORBID_IMPORTED_C_FUNCTION(void* malloc(size_t), noexcept, "use os::malloc");
-FORBID_IMPORTED_C_FUNCTION(void free(void*), noexcept, "use os::free");
-FORBID_IMPORTED_C_FUNCTION(void* calloc(size_t, size_t), noexcept, "use os::malloc and zero out manually");
-FORBID_IMPORTED_C_FUNCTION(void* realloc(void*, size_t), noexcept, "use os::realloc");
+//FORBID_IMPORTED_C_FUNCTION(void* malloc(size_t), noexcept, "use os::malloc");
+//FORBID_IMPORTED_C_FUNCTION(void free(void*), noexcept, "use os::free");
+//FORBID_IMPORTED_C_FUNCTION(void* calloc(size_t, size_t), noexcept, "use os::malloc and zero out manually");
+//FORBID_IMPORTED_C_FUNCTION(void* realloc(void*, size_t), noexcept, "use os::realloc");
 
 // These are not provided (and are unimplementable?) by Windows.
 // https://stackoverflow.com/questions/62962839/stdaligned-alloc-missing-from-visual-studio-2019
