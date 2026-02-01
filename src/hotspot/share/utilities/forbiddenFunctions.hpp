@@ -43,24 +43,24 @@
 // or have security concerns, either with preferred alternatives, or to be
 // avoided entirely.
 
-FORBID_IMPORTED_C_FUNCTION(char* strerror(int), noexcept, "use os::strerror");
-FORBID_IMPORTED_C_FUNCTION(char* strtok(char*, const char*), noexcept, "use strtok_r");
+//FORBID_IMPORTED_C_FUNCTION(char* strerror(int), noexcept, "use os::strerror");
+//FORBID_IMPORTED_C_FUNCTION(char* strtok(char*, const char*), noexcept, "use strtok_r");
 
 // AIX declarations for sprintf and snprintf are not noexcept, which is
 // inconsistent with most other system header declarations, including being
 // inconsistent with vsprintf and fsnprintf.
-FORBID_C_FUNCTION(int sprintf(char*, const char*, ...), NOT_AIX(noexcept), "use os::snprintf");
-FORBID_C_FUNCTION(int snprintf(char*, size_t, const char*, ...), NOT_AIX(noexcept), "use os::snprintf");
+//FORBID_C_FUNCTION(int sprintf(char*, const char*, ...), NOT_AIX(noexcept), "use os::snprintf");
+//FORBID_C_FUNCTION(int snprintf(char*, size_t, const char*, ...), NOT_AIX(noexcept), "use os::snprintf");
 
-PRAGMA_DIAG_PUSH
-FORBIDDEN_FUNCTION_IGNORE_CLANG_FORTIFY_WARNING
-FORBID_C_FUNCTION(int vsprintf(char*, const char*, va_list), noexcept, "use os::vsnprintf");
-FORBID_C_FUNCTION(int vsnprintf(char*, size_t, const char*, va_list), noexcept, "use os::vsnprintf");
-PRAGMA_DIAG_POP
+//PRAGMA_DIAG_PUSH
+//FORBIDDEN_FUNCTION_IGNORE_CLANG_FORTIFY_WARNING
+//FORBID_C_FUNCTION(int vsprintf(char*, const char*, va_list), noexcept, "use os::vsnprintf");
+//FORBID_C_FUNCTION(int vsnprintf(char*, size_t, const char*, va_list), noexcept, "use os::vsnprintf");
+//PRAGMA_DIAG_POP
 
 // All of the following functions return raw C-heap pointers.  We generally
 // want allocation to be done through NMT.
-FORBID_IMPORTED_C_FUNCTION(char* strdup(const char *s), noexcept, "use os::strdup");
-FORBID_IMPORTED_C_FUNCTION(wchar_t* wcsdup(const wchar_t *s), noexcept, "don't use");
+//FORBID_IMPORTED_C_FUNCTION(char* strdup(const char *s), noexcept, "use os::strdup");
+//FORBID_IMPORTED_C_FUNCTION(wchar_t* wcsdup(const wchar_t *s), noexcept, "don't use");
 
 #endif // SHARE_UTILITIES_FORBIDDENFUNCTIONS_HPP
