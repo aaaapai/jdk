@@ -875,7 +875,7 @@ static void *thread_native_entry(Thread *thread) {
 
   thread->record_stack_base_and_size();
 
-#ifndef __GLIBC__
+#if !defined(__BIONIC__) && !defined(__GLIBC__)
   // Try to randomize the cache line index of hot stack frames.
   // This helps when threads of the same stack traces evict each other's
   // cache lines. The threads can be either from the same JVM instance, or
