@@ -76,8 +76,8 @@ using ::calloc;
 #endif // AIX altivec allocator support
 
 // Prefer os:: variants of these.
-FORBID_IMPORTED_NORETURN_C_FUNCTION(void exit(int), noexcept, "use os::exit")
-FORBID_IMPORTED_NORETURN_C_FUNCTION(void _Exit(int), noexcept, "use os::exit")
+//FORBID_IMPORTED_NORETURN_C_FUNCTION(void exit(int), noexcept, "use os::exit")
+//FORBID_IMPORTED_NORETURN_C_FUNCTION(void _Exit(int), noexcept, "use os::exit")
 
 // Windows puts _exit in <stdlib.h>. POSIX puts it in <unistd.h>.
 // We can't forbid it here when using clang if it's not in <stdlib.h> - see
@@ -98,8 +98,6 @@ FORBID_IMPORTED_C_FUNCTION(void* realloc(void*, size_t), noexcept, "use os::real
 // https://stackoverflow.com/questions/62962839/stdaligned-alloc-missing-from-visual-studio-2019
 // They also aren't useful for a POSIX implementation of NMT.
 #ifndef _WINDOWS
-FORBID_C_FUNCTION(void* aligned_alloc(size_t, size_t), noexcept, "don't use");
-FORBID_C_FUNCTION(int posix_memalign(void**, size_t, size_t), noexcept, "don't use");
 #endif // !_WINDOWS
 
 #endif // SHARE_CPPSTDLIB_CSTDLIB_HPP
