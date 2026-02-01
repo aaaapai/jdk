@@ -209,6 +209,8 @@ static malloc_info_func_t g_malloc_info = nullptr;
 // avoid this
 static bool suppress_primordial_thread_resolution = false;
 
+static bool read_so_path_from_maps(const char* so_name, char* buf, int buflen);
+
 // utility functions
 
 bool os::is_containerized() {
