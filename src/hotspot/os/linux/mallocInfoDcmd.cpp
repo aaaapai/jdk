@@ -33,7 +33,7 @@
 constexpr const char* malloc_info_unavailable = "Error: malloc_info(3) not available.";
 
 void MallocInfoDcmd::execute(DCmdSource source, TRAPS) {
-#ifdef __GLIBC__
+#if defined(__BIONIC__) || defined(__GLIBC__)
   char* buf;
   size_t size;
   FILE* stream = ::open_memstream(&buf, &size);
