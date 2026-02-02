@@ -49,7 +49,7 @@ inline void os::map_stack_shadow_pages(address sp) {
 
 // Trim-native support
 inline bool os::can_trim_native_heap() {
-#ifdef __GLIBC__
+#if defined(__BIONIC__) || defined(__GLIBC__)
   return true;
 #else
   return false; // musl
