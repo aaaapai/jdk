@@ -38,6 +38,8 @@
 #include "forbiddenFunctions_posix.hpp"
 #endif
 
+#ifndef __ANDROID__
+
 // Forbid the use of various C library functions.  Some of these have os::
 // replacements that should be used instead.  Others are considered obsolete
 // or have security concerns, either with preferred alternatives, or to be
@@ -66,5 +68,7 @@ FORBID_IMPORTED_C_FUNCTION(wchar_t* wcsdup(const wchar_t *s), noexcept, "don't u
 // Disallow non-wrapped raw library function.
 MACOS_AARCH64_ONLY(FORBID_C_FUNCTION(void pthread_jit_write_protect_np(int enabled), noexcept, \
                                      "use os::current_thread_enable_wx");)
+
+#endif // __ANDROID__
 
 #endif // SHARE_UTILITIES_FORBIDDENFUNCTIONS_HPP
