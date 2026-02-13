@@ -534,10 +534,12 @@ bool os::Linux::get_tick_information(CPUPerfTicks* pticks, int which_logical_cpu
 
 #ifndef SYS_gettid
 // i386: 224, amd64: 186
-  #if defined(__i386__)
+  #if defined(__i386__) || defined(__arm__)
     #define SYS_gettid 224
   #elif defined(__amd64__)
     #define SYS_gettid 186
+#elif defined(__arm64__) || defined(__aarch64__)
+    #define SYS_gettid 178
   #else
     #error "Define SYS_gettid for this architecture"
   #endif
