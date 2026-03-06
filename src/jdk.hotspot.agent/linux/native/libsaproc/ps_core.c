@@ -39,6 +39,40 @@
 #include "proc_service.h"
 #include "salibelf.h"
 
+#ifdef __ANDROID__
+#include <stdio.h>
+#include <ctype.h>
+#include <sys/user.h>
+#endif
+
+#ifdef __ANDROID__
+#if !defined(HAVE_USER_REGS_STRUCT)
+#if defined(__aarch64__)
+struct user_regs_struct {
+    unsigned long long regs[31];
+    unsigned long long sp;
+    unsigned long long pc;
+    unsigned long long pstate;
+};
+#elif defined(__arm__)
+struct user_regs_struct {
+    unsigned long uregs[18];
+};
+#elif defined(__x86_64__)
+struct user_regs_struct {
+    unsigned long long r15, r14, r13, r12, rbp, rbx, r11, r10, r9, r8;
+    unsigned long long rax, rcx, rdx, rsi, rdi, orig_rax, rip;
+    unsigned long long cs, eflags, rsp, ss, fs_base, gs_base, ds, es, fs, gs;
+};
+#elif defined(__i386__)
+struct user_regs_struct {
+    unsigned long ebx, ecx, edx, esi, edi, ebp, eax, xds, xes, xfs, xgs;
+    unsigned long orig_eax, eip, xcs, eflags, esp, xss;
+};
+#endif
+#endif
+#endif
+
 // This file has the libproc implementation to read core files.
 // For live processes, refer to ps_proc.c. Portions of this is adapted
 // /modelled after Solaris libproc.so (in particular Pcore.c)
@@ -800,6 +834,106 @@ static bool read_shared_lib_info(struct ps_prochandle* ph) {
   return true;
 }
 
+#ifdef __ANDROID__
+static bool parse_tombstone(struct ps_prochandle* ph) {
+    FILE* fp = fdopen(dup(ph->core->core_fd), "r");
+    if (!fp) {
+        print_error("parse_tombstone: failed to fdopen core file\n");
+        return false;
+    }
+
+    char line[1024];
+    int current_tid = 0;
+    struct user_regs_struct current_regs;
+    int regs_filled = 0;
+
+    memset(&current_regs, 0, sizeof(current_regs));
+
+    while (fgets(line, sizeof(line), fp)) {
+        size_t len = strlen(line);
+        if (len > 0 && line[len-1] == '\n') line[len-1] = '\0';
+
+        if (strncmp(line, "---", 3) == 0) {
+            if (current_tid != 0 && regs_filled) {
+                thread_info* thr = add_thread_info(ph, current_tid);
+                if (thr) {
+                    memcpy(&thr->regs, &current_regs, sizeof(current_regs));
+                }
+            }
+            current_tid = 0;
+            regs_filled = 0;
+            continue;
+        }
+
+        if (sscanf(line, "pid: %*d, tid: %d", &current_tid) == 1) {
+            continue;
+        }
+
+#if defined(__aarch64__)
+        if (strncmp(line, "      x0 ", 9) == 0) {
+            sscanf(line, "      x0 %llx  x1 %llx  x2 %llx  x3 %llx",
+                   &current_regs.regs[0], &current_regs.regs[1],
+                   &current_regs.regs[2], &current_regs.regs[3]);
+            regs_filled = 1;
+        } else if (strncmp(line, "      x4 ", 9) == 0) {
+            sscanf(line, "      x4 %llx  x5 %llx  x6 %llx  x7 %llx",
+                   &current_regs.regs[4], &current_regs.regs[5],
+                   &current_regs.regs[6], &current_regs.regs[7]);
+        } else if (strncmp(line, "      x8 ", 9) == 0) {
+            sscanf(line, "      x8 %llx  x9 %llx  x10 %llx  x11 %llx",
+                   &current_regs.regs[8], &current_regs.regs[9],
+                   &current_regs.regs[10], &current_regs.regs[11]);
+        } else if (strncmp(line, "      x12 ", 10) == 0) {
+            sscanf(line, "      x12 %llx  x13 %llx  x14 %llx  x15 %llx",
+                   &current_regs.regs[12], &current_regs.regs[13],
+                   &current_regs.regs[14], &current_regs.regs[15]);
+        } else if (strncmp(line, "      x16 ", 10) == 0) {
+            sscanf(line, "      x16 %llx  x17 %llx  x18 %llx  x19 %llx",
+                   &current_regs.regs[16], &current_regs.regs[17],
+                   &current_regs.regs[18], &current_regs.regs[19]);
+        } else if (strncmp(line, "      x20 ", 10) == 0) {
+            sscanf(line, "      x20 %llx  x21 %llx  x22 %llx  x23 %llx",
+                   &current_regs.regs[20], &current_regs.regs[21],
+                   &current_regs.regs[22], &current_regs.regs[23]);
+        } else if (strncmp(line, "      x24 ", 10) == 0) {
+            sscanf(line, "      x24 %llx  x25 %llx  x26 %llx  x27 %llx",
+                   &current_regs.regs[24], &current_regs.regs[25],
+                   &current_regs.regs[26], &current_regs.regs[27]);
+        } else if (strncmp(line, "      x28 ", 10) == 0) {
+            // x28, x29, x30, sp
+            sscanf(line, "      x28 %llx  x29 %llx  x30 %llx  sp %llx",
+                   &current_regs.regs[28], &current_regs.regs[29],
+                   &current_regs.regs[30], &current_regs.sp);
+        } else if (strncmp(line, "      pc ", 9) == 0) {
+            sscanf(line, "      pc %llx", &current_regs.pc);
+        }
+#elif defined(__arm__)
+        if (strncmp(line, "      r0 ", 9) == 0) {
+            sscanf(line, "      r0 %lx  r1 %lx  r2 %lx  r3 %lx",
+                   &current_regs.uregs[0], &current_regs.uregs[1],
+                   &current_regs.uregs[2], &current_regs.uregs[3]);
+            regs_filled = 1;
+        }
+#endif //TODO...
+    }
+
+    if (current_tid != 0 && regs_filled) {
+        thread_info* thr = add_thread_info(ph, current_tid);
+        if (thr) {
+            memcpy(&thr->regs, &current_regs, sizeof(current_regs));
+        }
+    }
+
+    fclose(fp);
+
+    ph->core->num_maps = 0;
+    ph->core->maps = NULL;
+    ph->core->map_array = NULL;
+
+    return (ph->threads != NULL);
+}
+#endif
+
 // the one and only one exposed stuff from this file
 JNIEXPORT struct ps_prochandle* JNICALL
 Pgrab_core(const char* exec_file, const char* core_file) {
@@ -829,6 +963,14 @@ Pgrab_core(const char* exec_file, const char* core_file) {
     print_error("can't open core file: %s\n", strerror(errno));
     goto err;
   }
+  
+#ifdef __ANDROID__
+  if (!parse_tombstone(ph)) {
+    print_error("failed to parse tombstone file (or not a tombstone)\n");
+    goto err;
+  }
+  return ph;
+#endif
 
   // read core file ELF header
   if (read_elf_header(ph->core->core_fd, &core_ehdr) != true || core_ehdr.e_type != ET_CORE) {
