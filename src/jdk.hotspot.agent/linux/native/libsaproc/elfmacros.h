@@ -48,7 +48,9 @@
 #define ELF_ADDR        Elf32_Addr
 #define ELF_AUXV        Elf32_auxv_t
 
+#ifndef __ANDROID__
 #define ELF_ST_TYPE     ELF32_ST_TYPE
+#endif
 
 #endif
 
