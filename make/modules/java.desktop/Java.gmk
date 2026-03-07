@@ -46,7 +46,7 @@ EXCLUDE_FILES += \
     .template \
     #
 
-ifeq ($(call isTargetOs, macosx), true)
+ifeq ($(call isTargetOs, macosx_NOTIOS), true)
   # exclude all X11 on Mac.
   EXCLUDES += \
       sun/awt/screencast \
@@ -63,6 +63,12 @@ ifeq ($(call isTargetOs, macosx), true)
       $(wildcard $(TOPDIR)/src/java.desktop/unix/classes/sun/font/*.java) \
       #
 else
+  # exclude some strange files that did not compile due to missing classes
+  EXCLUDE_FILES += \
+      $(TOPDIR)/src/java.desktop/unix/classes/sun/font/X11GB2312.java \
+      $(TOPDIR)/src/java.desktop/unix/classes/sun/font/X11GBK.java \
+      $(TOPDIR)/src/java.desktop/unix/classes/sun/font/X11KSC5601.java \
+      #
   # TBD: figure out how to eliminate this long list
   EXCLUDE_FILES += \
       sun/awt/X11/ScreenFormat.java \
