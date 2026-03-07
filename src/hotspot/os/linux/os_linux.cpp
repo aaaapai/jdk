@@ -727,16 +727,21 @@ void os::init_system_properties_values() {
 
 void os::Linux::libpthread_init() {
   // Save glibc and pthread version strings.
+#ifndef __BIONIC__
 #if !defined(_CS_GNU_LIBC_VERSION) || \
     !defined(_CS_GNU_LIBPTHREAD_VERSION)
   #error "glibc too old (< 2.3.2)"
 #endif
-
+#endif
+  
 #ifdef MUSL_LIBC
   // confstr() from musl libc returns EINVAL for
   // _CS_GNU_LIBC_VERSION and _CS_GNU_LIBPTHREAD_VERSION
   os::Linux::set_libc_version("musl - unknown");
   os::Linux::set_libpthread_version("musl - unknown");
+#elif defined(__BIONIC__)
+  os::Linux::set_libc_version("bionic - unknown");
+  os::Linux::set_libpthread_version("bionic - unknown");
 #else
   size_t n = confstr(_CS_GNU_LIBC_VERSION, nullptr, 0);
   assert(n > 0, "cannot retrieve glibc version");
@@ -3173,7 +3178,11 @@ extern "C" JNIEXPORT void numa_error(char *where) { }
 // Handle request to load libnuma symbol version 1.1 (API v1). If it fails
 // load symbol from base version instead.
 void* os::Linux::libnuma_dlsym(void* handle, const char *name) {
+#ifndef __BIONIC__
   void *f = dlvsym(handle, name, "libnuma_1.1");
+#else
+  void *f = dlsym(handle, name);
+#endif
   if (f == nullptr) {
     f = dlsym(handle, name);
   }
@@ -3183,7 +3192,11 @@ void* os::Linux::libnuma_dlsym(void* handle, const char *name) {
 // Handle request to load libnuma symbol version 1.2 (API v2) only.
 // Return null if the symbol is not defined in this particular version.
 void* os::Linux::libnuma_v2_dlsym(void* handle, const char* name) {
+#ifndef __BIONIC__
   return dlvsym(handle, name, "libnuma_1.2");
+#else
+  return dlsym(handle, name);
+#endif
 }
 
 // Check numa dependent syscalls
@@ -3206,7 +3219,7 @@ static bool numa_syscall_check() {
 bool os::Linux::libnuma_init() {
   // Requires sched_getcpu() and numa dependent syscalls support
   if ((sched_getcpu() != -1) && numa_syscall_check()) {
-    void *handle = dlopen("libnuma.so.1", RTLD_LAZY);
+    void *handle = dlopen("libnuma.so", RTLD_LOCAL|RTLD_LAZY);
     if (handle != nullptr) {
       set_numa_node_to_cpus(CAST_TO_FN_PTR(numa_node_to_cpus_func_t,
                                            libnuma_dlsym(handle, "numa_node_to_cpus")));
@@ -5088,7 +5101,11 @@ bool os::is_thread_cpu_time_supported() {
 // Linux doesn't yet have a (official) notion of processor sets,
 // so just return the system wide load average.
 int os::loadavg(double loadavg[], int nelem) {
+#ifndef __BIONIC__
   return ::getloadavg(loadavg, nelem);
+#else
+  return -1;
+#endif
 }
 
 // Get the default path to the core file
