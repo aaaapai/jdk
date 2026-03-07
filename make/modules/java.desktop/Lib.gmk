@@ -71,7 +71,7 @@ ifeq ($(call isTargetOs, aix), false)
       LIBS_linux := $(ALSA_LIBS), \
       LIBS_macosx := \
           -framework AudioToolbox \
-          -framework AudioUnit \
+          -framework AVFoundation \
           -framework CoreAudio \
           -framework CoreFoundation \
           -framework CoreMIDI \
