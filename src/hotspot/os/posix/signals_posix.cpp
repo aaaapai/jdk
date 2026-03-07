@@ -50,6 +50,11 @@
 
 #include <signal.h>
 
+#ifdef __IOS__
+#include "os_bsd.hpp"
+#include <sys/mman.h>
+#endif
+
 #define SEGV_BNDERR_value 3
 
 #if defined(SEGV_BNDERR)
@@ -574,6 +579,25 @@ int JVM_HANDLE_XXX_SIGNAL(int sig, siginfo_t* info,
 
   ucontext_t* const uc = (ucontext_t*) ucVoid;
   Thread* const t = Thread::current_or_null_safe();
+
+  // Hopefully placing W^X handing here is safe enough, maybe check repeat?
+  if (!os::Bsd::isRWXJITAvailable() && sig == SIGBUS) {
+    address pc = (address) os::Posix::ucontext_get_pc(uc);
+    //static address last_pc, last_si_addr;
+    if (pc == info->si_addr) { //(pc >= CodeCache::low_bound() && pc < CodeCache::high_bound()) {
+    //(CodeCache::contains(pc) || thread->thread_state() == _thread_in_Java) {
+        //if (last_pc != pc) {
+        //   last_pc = pc;
+           bool handled = !mprotect((address) ((uintptr_t)pc & -PAGE_SIZE), PAGE_SIZE, PROT_READ | PROT_EXEC);
+           if (handled) return true;
+        //}
+    } else if (info->si_addr >= CodeCache::low_bound() && info->si_addr < CodeCache::high_bound()) {
+      //(CodeCache::contains(info->si_addr)) { // && last_si_addr != info->si_addr) {
+      //last_si_addr = (address) info->si_addr;
+      bool handled = !mprotect((address) ((uintptr_t)info->si_addr & -PAGE_SIZE), PAGE_SIZE, PROT_READ | PROT_WRITE);
+      if (handled) return true;
+    }
+  }
 
   // Handle JFR thread crash protection.
   //  Note: this may cause us to longjmp away. Do not use any code before this
