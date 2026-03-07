@@ -62,7 +62,7 @@ ifeq ($(INCLUDE_JVMCI), false)
 endif
 
 # jpackage is only on windows, macosx, and linux
-ifeq ($(call isTargetOs, windows macosx linux), false)
+ifeq ($(call isTargetOs, windows macosx linux android), false)
   MODULES_FILTER += jdk.jpackage
 endif
 
