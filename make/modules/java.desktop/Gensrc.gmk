@@ -31,7 +31,7 @@ ifeq ($(call isTargetOs, windows), false)
   include gensrc/GensrcIcons.gmk
 endif
 
-ifeq ($(call isTargetOs, linux aix android), true)
+ifeq ($(call isTargetOs, linux aix android ios macosx), true)
   include gensrc/GensrcX11Wrappers.gmk
 endif
 
@@ -51,7 +51,7 @@ PROP_SRC_DIRS := \
     $(TOPDIR)/src/java.desktop/share/classes/sun/print/resources \
     #
 
-ifeq ($(call isTargetOs, macosx), true)
+ifeq ($(call isTargetOs, macosx_NOTIOS), true)
   PROP_SRC_DIRS += \
       $(TOPDIR)/src/java.desktop/macosx/classes/com/apple/laf/resources \
       $(TOPDIR)/src/java.desktop/macosx/classes/sun/awt/resources \
