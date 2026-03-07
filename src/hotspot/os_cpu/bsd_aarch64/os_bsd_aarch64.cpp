@@ -23,7 +23,7 @@
  * questions.
  *
  */
-
+#include "tcg-apple-jit.h"
 #include "asm/macroAssembler.hpp"
 #include "classfile/classLoader.hpp"
 #include "classfile/vmSymbols.hpp"
@@ -567,7 +567,13 @@ THREAD_LOCAL bool os::_jit_exec_enabled;
 void os::current_thread_enable_wx(WXMode mode) {
   bool exec_enabled = mode != WXWrite;
   if (exec_enabled != _jit_exec_enabled NOT_PRODUCT( || DefaultWXWriteMode == WXWrite)) {
+#ifdef __IOS__
+    if (os::Bsd::isRWXJITAvailable()) {
+    jit_write_protect(exec_enabled);
+  }
+#else
     permit_forbidden_function::pthread_jit_write_protect_np(exec_enabled);
+#endif
     _jit_exec_enabled = exec_enabled;
   }
 }
