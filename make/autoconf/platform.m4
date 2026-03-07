@@ -198,6 +198,14 @@ AC_DEFUN([PLATFORM_EXTRACT_VARS_FROM_CPU],
 AC_DEFUN([PLATFORM_EXTRACT_VARS_FROM_OS],
 [
   case "$1" in
+    *android*)
+      VAR_OS=android
+      VAR_OS_TYPE=unix
+      ;;
+    *ios*)
+      VAR_OS=ios
+      VAR_OS_TYPE=unix
+      ;;
     *linux*)
       VAR_OS=linux
       VAR_OS_TYPE=unix
@@ -529,6 +537,14 @@ AC_DEFUN([PLATFORM_SETUP_LEGACY_VARS_HELPER],
   AC_SUBST(DEFINE_CROSS_COMPILE_ARCH)
 
   # Convert openjdk platform names to hotspot names
+
+  if test "x$OPENJDK_$1_OS" = xios; then
+    HOTSPOT_$1_OS=bsd
+  fi
+
+  if test "x$OPENJDK_$1_OS" = xandroid; then
+    HOTSPOT_$1_OS=linux
+  fi
 
   HOTSPOT_$1_OS=${OPENJDK_$1_OS}
   if test "x$OPENJDK_$1_OS" = xmacosx; then
