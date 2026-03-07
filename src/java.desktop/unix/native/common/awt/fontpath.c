@@ -528,6 +528,7 @@ typedef FcStrList* (*FcConfigGetCacheDirsFuncType)(FcConfig *config);
 typedef FcChar8* (*FcStrListNextFuncType)(FcStrList *list);
 typedef FcChar8* (*FcStrListDoneFuncType)(FcStrList *list);
 
+#ifdef __IOS__
 // mod: fallback directories
 static char **getFallbackFontLocations() {
 
@@ -539,6 +540,7 @@ static char **getFallbackFontLocations() {
     return fontdirs;
 
 }
+#endif
 
 static char **getFontConfigLocations() {
 
@@ -561,8 +563,11 @@ static char **getFontConfigLocations() {
     void* libfontconfig = openFontConfig();
 
     if (libfontconfig == NULL) {
-        return getFallbackFontLocations();
-        // original: NULL
+#ifdef __IOS__
+        return getFallbackFontLocations(); // original: NULL
+#else
+        return NULL;
+#endif
     }
 
     FcPatternBuild     =
