@@ -861,10 +861,6 @@ void ClassLoader::load_jimage_library() {
       JImageClose = CAST_TO_FN_PTR(JImageClose_t, os::lookup_function("JIMAGE_Close"));
       JImageFindResource = CAST_TO_FN_PTR(JImageFindResource_t, os::lookup_function("JIMAGE_FindResource"));
       JImageGetResource = CAST_TO_FN_PTR(JImageGetResource_t, os::lookup_function("JIMAGE_GetResource"));
-      JImageOpen = JIMAGE_Open;
-      JImageClose = JIMAGE_Close;
-      JImageFindResource = JIMAGE_FindResource;
-      JImageGetResource = JIMAGE_GetResource;
       assert(JImageOpen != nullptr && JImageClose != nullptr &&
             JImageFindResource != nullptr && JImageGetResource != nullptr,
             "could not lookup all jimage library functions");
