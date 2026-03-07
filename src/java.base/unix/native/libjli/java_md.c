@@ -576,17 +576,149 @@ const char*
 SetExecname(char **argv)
 {
     char* exec_path = NULL;
-#if defined(__linux__)
-    {
-        const char* self = "/proc/self/exe";
-        char buf[PATH_MAX+1];
-        int len = readlink(self, buf, PATH_MAX);
-        if (len >= 0) {
-            buf[len] = '\0';            /* readlink(2) doesn't NUL terminate */
-            exec_path = JLI_StringDup(buf);
+#if defined(__ANDROID__)
+    // Since both __ANDROID__ and __linux__ are defined, we must let the preprocessor preprocess the __ANDROID__ part first
+    char *__java_home = getenv("JAVA_HOME");
+    char *tmpdir = getenv("TMPDIR");
+    char buf[PATH_MAX+1];
+    char *p = NULL;
+    
+    if (tmpdir == NULL) {
+        tmpdir = "/data/local/tmp";
+    }
+    
+    // 先尝试找到原始的java可执行文件
+    char original_java_path[PATH_MAX+1];
+    int found = 0;
+    
+    if ((p = JLI_StrRChr(argv[0], '/')) != 0) {
+        p++;
+        if ((JLI_StrLen(p) == 4) && JLI_StrCmp(p, "java") == 0) {
+            // argv[0] 可能就是java路径
+            if (*argv[0] != '/') {
+                char *curdir = NULL;
+                getcwd(buf, PATH_MAX);
+                curdir = JLI_StringDup(buf);
+                JLI_Snprintf(original_java_path, PATH_MAX, "%s/%s", curdir, argv[0]);
+                JLI_MemFree(curdir);
+            } else {
+                JLI_Snprintf(original_java_path, PATH_MAX, "%s", argv[0]);
+            }
+            found = 1;
         }
     }
-#else /* !__linux__ */
+    
+    if (!found && __java_home != NULL) {
+        JLI_Snprintf(original_java_path, PATH_MAX, "%s/bin/java", __java_home);
+        found = 1;
+    }
+    
+    if (!found) {
+        const char* common_paths[] = {
+            "/system/bin/java",
+            "/system/xbin/java",
+            "/data/local/bin/java",
+            NULL
+        };
+        
+        for (int i = 0; common_paths[i] != NULL; i++) {
+            struct stat st;
+            if (stat(common_paths[i], &st) == 0) {
+                JLI_Snprintf(original_java_path, PATH_MAX, "%s", common_paths[i]);
+                found = 1;
+                break;
+            }
+        }
+    }
+    
+    if (!found) {
+        JLI_Snprintf(original_java_path, PATH_MAX, "/data/data/%s/storage/jvm/bin/java",
+                     argv[0]);
+        found = 1;
+    }
+    
+    JLI_TraceLauncher("Original java path: %s\n", original_java_path);
+    
+    struct stat st;
+    if (stat(original_java_path, &st) == 0) {
+        char libjava_path[PATH_MAX+1];
+        char java_symlink_path[PATH_MAX+1];
+        
+        JLI_Snprintf(libjava_path, PATH_MAX, "%s/libjava.so", tmpdir);
+        JLI_Snprintf(java_symlink_path, PATH_MAX, "%s/java", tmpdir);
+        
+        JLI_TraceLauncher("Target libjava.so: %s\n", libjava_path);
+        JLI_TraceLauncher("Target java symlink: %s\n", java_symlink_path);
+        
+        FILE *src = fopen(original_java_path, "rb");
+        if (src != NULL) {
+            FILE *dst = fopen(libjava_path, "wb");
+            if (dst != NULL) {
+                char buffer[8192];
+                size_t bytes;
+                while ((bytes = fread(buffer, 1, sizeof(buffer), src)) > 0) {
+                    fwrite(buffer, 1, bytes, dst);
+                }
+                fclose(dst);
+                
+                chmod(libjava_path, 0755);
+                
+                JLI_TraceLauncher("Successfully copied java to: %s\n", libjava_path);
+                
+                if (symlink(libjava_path, java_symlink_path) == 0) {
+                    JLI_TraceLauncher("Created symlink: %s -> %s\n", 
+                                      java_symlink_path, libjava_path);
+                    
+                    chmod(java_symlink_path, 0755);
+                    
+                    if (access(java_symlink_path, X_OK) == 0) {
+                        JLI_TraceLauncher("Symlink is executable\n");
+                        
+                        void *handle = dlopen(libjava_path, RTLD_LAZY);
+                        if (handle != NULL) {
+                            JLI_TraceLauncher("Successfully dlopen libjava.so\n");
+                            dlclose(handle);
+                            
+                            exec_path = JLI_StringDup(java_symlink_path);
+                        } else {
+                            JLI_TraceLauncher("dlopen libjava.so failed: %s\n", dlerror());
+                            exec_path = JLI_StringDup(java_symlink_path);
+                        }
+                    } else {
+                        JLI_TraceLauncher("Symlink not executable, using original\n");
+                        exec_path = JLI_StringDup(original_java_path);
+                    }
+                } else {
+                    JLI_TraceLauncher("Failed to create symlink: %s\n", strerror(errno));
+                    if (access(libjava_path, X_OK) == 0) {
+                        exec_path = JLI_StringDup(libjava_path);
+                    } else {
+                        exec_path = JLI_StringDup(original_java_path);
+                    }
+                }
+            } else {
+                JLI_TraceLauncher("Failed to open destination file: %s\n", libjava_path);
+                exec_path = JLI_StringDup(original_java_path);
+            }
+            fclose(src);
+        } else {
+            JLI_TraceLauncher("Failed to open source file: %s\n", original_java_path);
+            exec_path = JLI_StringDup(original_java_path);
+        }
+    } else {
+        JLI_TraceLauncher("Original java file not found: %s\n", original_java_path);
+        exec_path = JLI_StringDup(original_java_path);
+    }
+    
+#elif defined(__linux__)
+    const char* self = "/proc/self/exe";
+    char buf[PATH_MAX+1];
+    int len = readlink(self, buf, PATH_MAX);
+    if (len >= 0) {
+        buf[len] = '\0';
+        exec_path = JLI_StringDup(buf);
+    }
+#else
     {
         /* Not implemented */
     }
