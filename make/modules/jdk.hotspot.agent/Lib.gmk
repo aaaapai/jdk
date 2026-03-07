@@ -49,7 +49,7 @@ else ifeq ($(call isTargetOs, windows), true)
   endif
 endif
 
-ifeq ($(call isTargetOs, linux, android), true)
+ifeq ($(call isTargetOs, linux android), true)
   LIBSAPROC_LINK_TYPE := C++
 else
   LIBSAPROC_LINK_TYPE := C
