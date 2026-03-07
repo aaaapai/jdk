@@ -53,7 +53,7 @@ STATIC_LIB_MODULES := $(sort $(patsubst $(SUPPORT_OUTPUTDIR)/modules_static-libs
 
 # Filter out known broken libraries. This is a temporary measure until
 # proper support for these libraries can be provided.
-ifeq ($(call isTargetOs, linux), true)
+ifeq ($(call isTargetOs, linux android), true)
   # libsplashscreen has a name conflict with libawt in the function
   # BitmapToYXBandedRectangles, so we exclude it for now.
   BROKEN_STATIC_LIBS += splashscreen
@@ -100,7 +100,7 @@ EXTERNAL_LIBS := $(strip $(shell $(CAT) $(LIB_FLAGS_FILES) | \
 
 ifeq ($(call isTargetOs, macosx), true)
   STATIC_LIBS := $(addprefix -force_load$(SPACE), $(STATIC_LIB_FILES))
-else ifeq ($(call isTargetOs, linux), true)
+else ifeq ($(call isTargetOs, linux android), true)
   STATIC_LIBS := -Wl,--export-dynamic -Wl,--whole-archive $(STATIC_LIB_FILES) -Wl,--no-whole-archive
 else ifeq ($(call isTargetOs, windows), true)
   STATIC_LIBS := $(addprefix -wholearchive:, $(STATIC_LIB_FILES))
