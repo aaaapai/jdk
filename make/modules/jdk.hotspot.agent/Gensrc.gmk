@@ -43,14 +43,14 @@ ifeq ($(call isTargetOs, macosx), true)
   MACH_EXC_USER := $(MIG_OUTPUT_DIR)/mach_excUser.c
   MACH_EXC_SERVER := $(MIG_OUTPUT_DIR)/mach_excServer.c
   ifneq ($(SYSROOT), )
-    MIG_SYSROOT_FLAGS := -isysroot $(SYSROOT)
+    MIG_SYSROOT_FLAGS := -isysroot $(themacsysroot)
   endif
 
-  $(MACH_EXC_SERVER): $(SYSROOT)/usr/include/mach/mach_exc.defs
+  $(MACH_EXC_SERVER): $(themacsysroot)/usr/include/mach/mach_exc.defs
 	$(call MakeTargetDir)
 	$(MIG) $(MIG_SYSROOT_FLAGS) \
 	    -server $@ -user $(MACH_EXC_USER) \
-	    -header $(MACH_EXC_HEADER) $(SYSROOT)/usr/include/mach/mach_exc.defs
+	    -header $(MACH_EXC_HEADER) $(themacsysroot)/usr/include/mach/mach_exc.defs
 
   TARGETS += $(MACH_EXC_SERVER)
 endif
