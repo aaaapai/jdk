@@ -2052,7 +2052,7 @@ const char* os::Linux::dll_path(void* lib) {
             if ((uintptr_t)lib >= start && (uintptr_t)lib < end) {
               const char* basename = strrchr(path, '/');
               if (basename && strcmp(basename + 1, info.dli_fname) == 0) {
-                l_path = os::strdup(path);  // 需要复制，因为 path 是栈上的
+                l_path = os::strdup(path);
                 break;
               }
             }
