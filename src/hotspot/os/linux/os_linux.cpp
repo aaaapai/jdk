@@ -209,7 +209,6 @@ static malloc_info_func_t g_malloc_info = nullptr;
 // avoid this
 static bool suppress_primordial_thread_resolution = false;
 
-static bool read_so_path_from_maps(const char* so_name, char* buf, int buflen);
 // utility functions
 
 bool os::is_containerized() {
@@ -1629,34 +1628,6 @@ bool os::dll_address_to_library_name(address addr, char* buf,
   if (offset) *offset = -1;
   return false;
 }
-
-static bool read_so_path_from_maps(const char* so_name, char* buf, int buflen) {
-  FILE *fp = fopen("/proc/self/maps", "r");
-  assert(fp, "Failed to open /proc/self/maps");
-  if (!fp) {
-    return false;
-  }
-
-  char maps_buffer[2048];
-  while (fgets(maps_buffer, 2048, fp) != NULL) {
-    if (strstr(maps_buffer, so_name) == NULL) {
-      continue;
-    }
-
-    char *so_path = strchr(maps_buffer, '/');
-    so_path[strlen(so_path) - 1] = '\0'; // Cut trailing \n
-    jio_snprintf(buf, buflen, "%s", so_path);
-    fclose(fp);
-    return true;
-  }
-
-  fclose(fp);
-  return false;
-}
-
-// Loads .dll/.so and
-// in case of error it checks if .dll/.so was built for the
-// same architecture as Hotspot is running on
 
 // Remember the stack's state. The Linux dynamic linker will change
 // the stack to 'executable' at most once, so we must safepoint only once.
