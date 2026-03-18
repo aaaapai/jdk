@@ -375,10 +375,20 @@ Java_sun_nio_fs_UnixNativeDispatcher_init(JNIEnv* env, jclass this)
 #ifdef _DARWIN_FEATURE_64_BIT_INODE
     capabilities |= sun_nio_fs_UnixNativeDispatcher_SUPPORTS_BIRTHTIME;
 #endif
-#if defined(__linux__)
+#ifdef __linux__
     my_statx_func = (statx_func*) dlsym(RTLD_DEFAULT, "statx");
     if (my_statx_func != NULL) {
-        capabilities |= sun_nio_fs_UnixNativeDispatcher_SUPPORTS_BIRTHTIME;
+#ifndef __ANDROID__
+            capabilities |= sun_nio_fs_UnixNativeDispatcher_SUPPORTS_BIRTHTIME;
+#else
+            struct statx buf;
+            int fd = open("/proc/self/exe", O_RDONLY);
+            if (fd != -1) {
+                if (my_statx_func(fd, "", AT_EMPTY_PATH, STATX_BASIC_STATS, &buf) == 0)
+                    capabilities |= sun_nio_fs_UnixNativeDispatcher_SUPPORTS_BIRTHTIME;
+                close(fd);
+            }
+#endif
     }
 #endif
 
