@@ -2032,10 +2032,37 @@ const char* os::Linux::dll_path(void* lib) {
   const char* l_path = nullptr;
   assert(lib != nullptr, "dll_path parameter must not be null");
 
+#ifndef __ANDROID__
   int res_dli = ::dlinfo(lib, RTLD_DI_LINKMAP, &lmap);
   if (res_dli == 0) {
     l_path = lmap->l_name;
   }
+#else
+  Dl_info info;
+  if (dladdr(lib, &info) && info.dli_fname) {
+    if (info.dli_fname[0] == '/') {
+      l_path = info.dli_fname;
+    } else {
+      FILE* fp = fopen("/proc/self/maps", "r");
+      if (fp) {
+        char line[256], path[256];
+        uintptr_t start, end;
+        while (fgets(line, sizeof(line), fp)) {
+          if (sscanf(line, "%lx-%lx %*s %*x %*x:%*x %*u %255s", &start, &end, path) == 3) {
+            if ((uintptr_t)lib >= start && (uintptr_t)lib < end) {
+              const char* basename = strrchr(path, '/');
+              if (basename && strcmp(basename + 1, info.dli_fname) == 0) {
+                l_path = os::strdup(path);  // 需要复制，因为 path 是栈上的
+                break;
+              }
+            }
+          }
+        }
+        fclose(fp);
+      }
+    }
+  }
+#endif
   return l_path;
 }
 
