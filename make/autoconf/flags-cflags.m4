@@ -787,6 +787,13 @@ AC_DEFUN([FLAGS_SETUP_CFLAGS_CPU_DEP],
       $1_CFLAGS_CPU="-mcpu=pwr8"
     fi
 
+    if test "x$FLAGS_CPU" = xarm; then
+      # For whatever reason arm build with clang fails with:
+      #   ad_arm.cpp:19849:4: error: "ARM must be defined"
+      # Fix by defining arm here as well.
+      $1_CFLAGS_CPU_JVM="-DARM"
+    fi
+
   elif test "x$TOOLCHAIN_TYPE" = xmicrosoft; then
     if test "x$FLAGS_CPU" = xx86; then
       $1_CFLAGS_CPU_JVM="-arch:IA32"
