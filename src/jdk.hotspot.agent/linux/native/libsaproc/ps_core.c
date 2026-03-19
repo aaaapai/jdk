@@ -48,6 +48,7 @@
 #ifdef __ANDROID__
 #if !defined(HAVE_USER_REGS_STRUCT)
 #if defined(__aarch64__)
+// ARM64 registers
 struct user_regs_struct {
     unsigned long long regs[31];
     unsigned long long sp;
@@ -55,23 +56,64 @@ struct user_regs_struct {
     unsigned long long pstate;
 };
 #elif defined(__arm__)
+// ARM32 registers
 struct user_regs_struct {
     unsigned long uregs[18];
 };
 #elif defined(__x86_64__)
+// x86_64 registers
 struct user_regs_struct {
     unsigned long long r15, r14, r13, r12, rbp, rbx, r11, r10, r9, r8;
     unsigned long long rax, rcx, rdx, rsi, rdi, orig_rax, rip;
     unsigned long long cs, eflags, rsp, ss, fs_base, gs_base, ds, es, fs, gs;
 };
 #elif defined(__i386__)
+// x86 registers
 struct user_regs_struct {
     unsigned long ebx, ecx, edx, esi, edi, ebp, eax, xds, xes, xfs, xgs;
     unsigned long orig_eax, eip, xcs, eflags, esp, xss;
 };
+#elif defined(__riscv)
+// RISC-V 64-bit registers
+struct user_regs_struct {
+    unsigned long long pc;      // Program counter
+    unsigned long long ra;      // Return address (x1)
+    unsigned long long sp;      // Stack pointer (x2)
+    unsigned long long gp;      // Global pointer (x3)
+    unsigned long long tp;      // Thread pointer (x4)
+    unsigned long long t0;      // Temporary (x5)
+    unsigned long long t1;      // Temporary (x6)
+    unsigned long long t2;      // Temporary (x7)
+    unsigned long long s0;      // Saved register/Frame pointer (x8)
+    unsigned long long s1;      // Saved register (x9)
+    unsigned long long a0;      // Function argument/return (x10)
+    unsigned long long a1;      // Function argument/return (x11)
+    unsigned long long a2;      // Function argument (x12)
+    unsigned long long a3;      // Function argument (x13)
+    unsigned long long a4;      // Function argument (x14)
+    unsigned long long a5;      // Function argument (x15)
+    unsigned long long a6;      // Function argument (x16)
+    unsigned long long a7;      // Function argument (x17)
+    unsigned long long s2;      // Saved register (x18)
+    unsigned long long s3;      // Saved register (x19)
+    unsigned long long s4;      // Saved register (x20)
+    unsigned long long s5;      // Saved register (x21)
+    unsigned long long s6;      // Saved register (x22)
+    unsigned long long s7;      // Saved register (x23)
+    unsigned long long s8;      // Saved register (x24)
+    unsigned long long s9;      // Saved register (x25)
+    unsigned long long s10;     // Saved register (x26)
+    unsigned long long s11;     // Saved register (x27)
+    unsigned long long t3;      // Temporary (x28)
+    unsigned long long t4;      // Temporary (x29)
+    unsigned long long t5;      // Temporary (x30)
+    unsigned long long t6;      // Temporary (x31)
+};
+#else
+#error "Unsupported architecture for user_regs_struct"
 #endif
-#endif
-#endif
+#endif // !defined(HAVE_USER_REGS_STRUCT)
+#endif // __ANDROID__
 
 // This file has the libproc implementation to read core files.
 // For live processes, refer to ps_proc.c. Portions of this is adapted
@@ -900,23 +942,227 @@ static bool parse_tombstone(struct ps_prochandle* ph) {
                    &current_regs.regs[24], &current_regs.regs[25],
                    &current_regs.regs[26], &current_regs.regs[27]);
         } else if (strncmp(line, "      x28 ", 10) == 0) {
-            // x28, x29, x30, sp
             sscanf(line, "      x28 %llx  x29 %llx  x30 %llx  sp %llx",
                    &current_regs.regs[28], &current_regs.regs[29],
                    &current_regs.regs[30], &current_regs.sp);
         } else if (strncmp(line, "      pc ", 9) == 0) {
             sscanf(line, "      pc %llx", &current_regs.pc);
+        } else if (strncmp(line, "      pstate ", 13) == 0) {
+            sscanf(line, "      pstate %llx", &current_regs.pstate);
         }
+
 #elif defined(__arm__)
         if (strncmp(line, "      r0 ", 9) == 0) {
             sscanf(line, "      r0 %lx  r1 %lx  r2 %lx  r3 %lx",
                    &current_regs.uregs[0], &current_regs.uregs[1],
                    &current_regs.uregs[2], &current_regs.uregs[3]);
             regs_filled = 1;
+        } else if (strncmp(line, "      r4 ", 9) == 0) {
+            sscanf(line, "      r4 %lx  r5 %lx  r6 %lx  r7 %lx",
+                   &current_regs.uregs[4], &current_regs.uregs[5],
+                   &current_regs.uregs[6], &current_regs.uregs[7]);
+        } else if (strncmp(line, "      r8 ", 9) == 0) {
+            sscanf(line, "      r8 %lx  r9 %lx  r10 %lx  r11 %lx",
+                   &current_regs.uregs[8], &current_regs.uregs[9],
+                   &current_regs.uregs[10], &current_regs.uregs[11]);
+        } else if (strncmp(line, "      ip ", 9) == 0) {
+            unsigned long ip, sp, lr, pc;
+            sscanf(line, "      ip %lx  sp %lx  lr %lx  pc %lx",
+                   &ip, &sp, &lr, &pc);
+            current_regs.uregs[12] = ip;  // IP (r12)
+            current_regs.uregs[13] = sp;  // SP (r13)
+            current_regs.uregs[14] = lr;  // LR (r14)
+            current_regs.uregs[15] = pc;  // PC (r15)
+        } else if (strncmp(line, "      cpsr ", 11) == 0) {
+            sscanf(line, "      cpsr %lx", &current_regs.uregs[16]);
         }
-#endif //TODO...
+
+#elif defined(__x86_64__)
+        if (strncmp(line, "    rax ", 8) == 0) {
+            sscanf(line, "    rax %llx  rbx %llx  rcx %llx  rdx %llx",
+                   &current_regs.rax, &current_regs.rbx,
+                   &current_regs.rcx, &current_regs.rdx);
+            regs_filled = 1;
+        } else if (strncmp(line, "    rsi ", 8) == 0) {
+            sscanf(line, "    rsi %llx  rdi %llx  rbp %llx  rsp %llx",
+                   &current_regs.rsi, &current_regs.rdi,
+                   &current_regs.rbp, &current_regs.rsp);
+        } else if (strncmp(line, "     r8 ", 8) == 0) {
+            sscanf(line, "     r8 %llx   r9 %llx  r10 %llx  r11 %llx",
+                   &current_regs.r8, &current_regs.r9,
+                   &current_regs.r10, &current_regs.r11);
+        } else if (strncmp(line, "    r12 ", 8) == 0) {
+            sscanf(line, "    r12 %llx  r13 %llx  r14 %llx  r15 %llx",
+                   &current_regs.r12, &current_regs.r13,
+                   &current_regs.r14, &current_regs.r15);
+        } else if (strncmp(line, "    rip ", 8) == 0) {
+            sscanf(line, "    rip %llx  eflags %llx",
+                   &current_regs.rip, &current_regs.eflags);
+        } else if (strncmp(line, "    cs ", 7) == 0) {
+            sscanf(line, "    cs %llx  ss %llx  ds %llx  es %llx  fs %llx  gs %llx",
+                   &current_regs.cs, &current_regs.ss,
+                   &current_regs.ds, &current_regs.es,
+                   &current_regs.fs, &current_regs.gs);
+        }
+
+#elif defined(__i386__)
+        if (strncmp(line, "    eax ", 8) == 0) {
+            sscanf(line, "    eax %lx  ebx %lx  ecx %lx  edx %lx",
+                   &current_regs.eax, &current_regs.ebx,
+                   &current_regs.ecx, &current_regs.edx);
+            regs_filled = 1;
+        } else if (strncmp(line, "    esi ", 8) == 0) {
+            sscanf(line, "    esi %lx  edi %lx  ebp %lx  esp %lx",
+                   &current_regs.esi, &current_regs.edi,
+                   &current_regs.ebp, &current_regs.esp);
+        } else if (strncmp(line, "    eip ", 8) == 0) {
+            sscanf(line, "    eip %lx  eflags %lx  xcs %lx  xss %lx",
+                   &current_regs.eip, &current_regs.eflags,
+                   &current_regs.xcs, &current_regs.xss);
+        }
+
+#elif defined(__riscv) && (__riscv_xlen == 64)
+        // RISC-V 64-bit support
+        if (strncmp(line, "      ra ", 9) == 0) {
+            // RISC-V tombstone format: "      ra 0x...  sp 0x...  gp 0x...  tp 0x..."
+            unsigned long long ra, sp, gp, tp;
+            sscanf(line, "      ra %llx  sp %llx  gp %llx  tp %llx",
+                   &ra, &sp, &gp, &tp);
+            current_regs.regs[1] = ra;   // x1/ra
+            current_regs.regs[2] = sp;   // x2/sp
+            current_regs.regs[3] = gp;   // x3/gp
+            current_regs.regs[4] = tp;   // x4/tp
+            regs_filled = 1;
+        } else if (strncmp(line, "      t0 ", 9) == 0) {
+            unsigned long long t0, t1, t2, fp;
+            sscanf(line, "      t0 %llx  t1 %llx  t2 %llx  fp %llx",
+                   &t0, &t1, &t2, &fp);
+            current_regs.regs[5] = t0;   // x5/t0
+            current_regs.regs[6] = t1;   // x6/t1
+            current_regs.regs[7] = t2;   // x7/t2
+            current_regs.regs[8] = fp;   // x8/fp
+        } else if (strncmp(line, "      s1 ", 9) == 0) {
+            unsigned long long s1, a0, a1, a2;
+            sscanf(line, "      s1 %llx  a0 %llx  a1 %llx  a2 %llx",
+                   &s1, &a0, &a1, &a2);
+            current_regs.regs[9] = s1;   // x9/s1
+            current_regs.regs[10] = a0;  // x10/a0
+            current_regs.regs[11] = a1;  // x11/a1
+            current_regs.regs[12] = a2;  // x12/a2
+        } else if (strncmp(line, "      a3 ", 9) == 0) {
+            unsigned long long a3, a4, a5, a6;
+            sscanf(line, "      a3 %llx  a4 %llx  a5 %llx  a6 %llx",
+                   &a3, &a4, &a5, &a6);
+            current_regs.regs[13] = a3;  // x13/a3
+            current_regs.regs[14] = a4;  // x14/a4
+            current_regs.regs[15] = a5;  // x15/a5
+            current_regs.regs[16] = a6;  // x16/a6
+        } else if (strncmp(line, "      a7 ", 9) == 0) {
+            unsigned long long a7, s2, s3, s4;
+            sscanf(line, "      a7 %llx  s2 %llx  s3 %llx  s4 %llx",
+                   &a7, &s2, &s3, &s4);
+            current_regs.regs[17] = a7;  // x17/a7
+            current_regs.regs[18] = s2;  // x18/s2
+            current_regs.regs[19] = s3;  // x19/s3
+            current_regs.regs[20] = s4;  // x20/s4
+        } else if (strncmp(line, "      s5 ", 9) == 0) {
+            unsigned long long s5, s6, s7, s8;
+            sscanf(line, "      s5 %llx  s6 %llx  s7 %llx  s8 %llx",
+                   &s5, &s6, &s7, &s8);
+            current_regs.regs[21] = s5;  // x21/s5
+            current_regs.regs[22] = s6;  // x22/s6
+            current_regs.regs[23] = s7;  // x23/s7
+            current_regs.regs[24] = s8;  // x24/s8
+        } else if (strncmp(line, "      s9 ", 9) == 0) {
+            unsigned long long s9, s10, s11, t3;
+            sscanf(line, "      s9 %llx  s10 %llx  s11 %llx  t3 %llx",
+                   &s9, &s10, &s11, &t3);
+            current_regs.regs[25] = s9;   // x25/s9
+            current_regs.regs[26] = s10;  // x26/s10
+            current_regs.regs[27] = s11;  // x27/s11
+            current_regs.regs[28] = t3;   // x28/t3
+        } else if (strncmp(line, "      t4 ", 9) == 0) {
+            unsigned long long t4, t5, t6, pc;
+            sscanf(line, "      t4 %llx  t5 %llx  t6 %llx  pc %llx",
+                   &t4, &t5, &t6, &pc);
+            current_regs.regs[29] = t4;  // x29/t4
+            current_regs.regs[30] = t5;  // x30/t5
+            current_regs.regs[31] = t6;  // x31/t6
+            current_regs.pc = pc;
+        }
+
+#elif defined(__riscv) && (__riscv_xlen == 32)
+        // RISC-V 32-bit support
+        if (strncmp(line, "      ra ", 9) == 0) {
+            unsigned int ra, sp, gp, tp;
+            sscanf(line, "      ra %x  sp %x  gp %x  tp %x",
+                   &ra, &sp, &gp, &tp);
+            current_regs.regs[1] = ra;
+            current_regs.regs[2] = sp;
+            current_regs.regs[3] = gp;
+            current_regs.regs[4] = tp;
+            regs_filled = 1;
+        } else if (strncmp(line, "      t0 ", 9) == 0) {
+            unsigned int t0, t1, t2, fp;
+            sscanf(line, "      t0 %x  t1 %x  t2 %x  fp %x",
+                   &t0, &t1, &t2, &fp);
+            current_regs.regs[5] = t0;
+            current_regs.regs[6] = t1;
+            current_regs.regs[7] = t2;
+            current_regs.regs[8] = fp;
+        } else if (strncmp(line, "      s1 ", 9) == 0) {
+            unsigned int s1, a0, a1, a2;
+            sscanf(line, "      s1 %x  a0 %x  a1 %x  a2 %x",
+                   &s1, &a0, &a1, &a2);
+            current_regs.regs[9] = s1;
+            current_regs.regs[10] = a0;
+            current_regs.regs[11] = a1;
+            current_regs.regs[12] = a2;
+        } else if (strncmp(line, "      a3 ", 9) == 0) {
+            unsigned int a3, a4, a5, a6;
+            sscanf(line, "      a3 %x  a4 %x  a5 %x  a6 %x",
+                   &a3, &a4, &a5, &a6);
+            current_regs.regs[13] = a3;
+            current_regs.regs[14] = a4;
+            current_regs.regs[15] = a5;
+            current_regs.regs[16] = a6;
+        } else if (strncmp(line, "      a7 ", 9) == 0) {
+            unsigned int a7, s2, s3, s4;
+            sscanf(line, "      a7 %x  s2 %x  s3 %x  s4 %x",
+                   &a7, &s2, &s3, &s4);
+            current_regs.regs[17] = a7;
+            current_regs.regs[18] = s2;
+            current_regs.regs[19] = s3;
+            current_regs.regs[20] = s4;
+        } else if (strncmp(line, "      s5 ", 9) == 0) {
+            unsigned int s5, s6, s7, s8;
+            sscanf(line, "      s5 %x  s6 %x  s7 %x  s8 %x",
+                   &s5, &s6, &s7, &s8);
+            current_regs.regs[21] = s5;
+            current_regs.regs[22] = s6;
+            current_regs.regs[23] = s7;
+            current_regs.regs[24] = s8;
+        } else if (strncmp(line, "      s9 ", 9) == 0) {
+            unsigned int s9, s10, s11, t3;
+            sscanf(line, "      s9 %x  s10 %x  s11 %x  t3 %x",
+                   &s9, &s10, &s11, &t3);
+            current_regs.regs[25] = s9;
+            current_regs.regs[26] = s10;
+            current_regs.regs[27] = s11;
+            current_regs.regs[28] = t3;
+        } else if (strncmp(line, "      t4 ", 9) == 0) {
+            unsigned int t4, t5, t6, pc;
+            sscanf(line, "      t4 %x  t5 %x  t6 %x  pc %x",
+                   &t4, &t5, &t6, &pc);
+            current_regs.regs[29] = t4;
+            current_regs.regs[30] = t5;
+            current_regs.regs[31] = t6;
+            current_regs.pc = pc;
+        }
+#endif // Architecture selection
     }
 
+    // Save the last thread info
     if (current_tid != 0 && regs_filled) {
         thread_info* thr = add_thread_info(ph, current_tid);
         if (thr) {
@@ -926,13 +1172,39 @@ static bool parse_tombstone(struct ps_prochandle* ph) {
 
     fclose(fp);
 
+    // For tombstone files, we don't have memory mappings from PT_LOAD segments
+    // So we need to create a minimal mapping structure to make the debugger work
     ph->core->num_maps = 0;
     ph->core->maps = NULL;
     ph->core->map_array = NULL;
 
+    // Add a dummy mapping for the whole address space to allow memory reads
+    // This is a simplification - in reality you'd need to parse /proc/pid/maps
+    // from the tombstone or have the mappings embedded in the tombstone file
+    if (ph->threads != NULL) {
+        // Create a single mapping covering the entire address space
+        // This is not accurate but allows basic register and stack inspection
+        map_info* map = (map_info*)calloc(1, sizeof(map_info));
+        if (map) {
+            map->vaddr = 0x1000;  // Skip NULL page
+            map->memsz = 0x7fffffffffff;  // Large enough to cover typical address space
+            map->fd = ph->core->core_fd;
+            map->offset = 0;
+            map->flags = PF_R | PF_W | PF_X;
+            
+            // Add to map list
+            map->next = ph->core->maps;
+            ph->core->maps = map;
+            ph->core->num_maps++;
+            
+            // Create map array for binary search
+            sort_map_array(ph);
+        }
+    }
+
     return (ph->threads != NULL);
 }
-#endif
+#endif // __ANDROID__
 
 // the one and only one exposed stuff from this file
 JNIEXPORT struct ps_prochandle* JNICALL
