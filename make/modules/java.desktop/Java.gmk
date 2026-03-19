@@ -46,7 +46,7 @@ EXCLUDE_FILES += \
     .template \
     #
 
-ifeq ($(call isTargetOs, macosx_NOTIOS), true)
+ifeq ($(call isTargetOs, macosx), true)
   # exclude all X11 on Mac.
   EXCLUDES += \
       sun/awt/screencast \
