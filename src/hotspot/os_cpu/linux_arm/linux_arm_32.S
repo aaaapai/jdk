@@ -218,8 +218,8 @@ cs_f2b_4:
         ldrhge  r4, [from], #2
         ldrhgt  r5, [from], #2
         strh    r3, [to], #2
-        strgeh  r4, [to], #2
-        strgth  r5, [to], #2
+        strhge  r4, [to], #2
+        strhgt  r5, [to], #2
         b       conjoint_shorts_finish
 
         # Destination not aligned
@@ -280,8 +280,8 @@ cs_f2b_4_u:
         ldrhge  r4, [from], #2
         ldrhgt  r5, [from], #2
         strh    r3, [to], #2
-        strgeh  r4, [to], #2
-        strgth  r5, [to], #2
+        strhge  r4, [to], #2
+        strhgt  r5, [to], #2
         b       conjoint_shorts_finish
 
         # Src and dest overlap, copy in a descending order
@@ -333,8 +333,8 @@ cs_b2f_all_copy:
         ldrhge  r4, [from, #-2]!
         ldrhgt  r5, [from, #-2]!
         strh    r3, [to, #-2]!
-        strgeh  r4, [to, #-2]!
-        strgth  r5, [to, #-2]!
+        strhge  r4, [to, #-2]!
+        strhgt  r5, [to, #-2]!
         b       conjoint_shorts_finish
 
         # Destination not aligned
