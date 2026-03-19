@@ -3249,7 +3249,11 @@ static bool numa_syscall_check() {
 bool os::Linux::libnuma_init() {
   // Requires sched_getcpu() and numa dependent syscalls support
   if ((sched_getcpu() != -1) && numa_syscall_check()) {
+#ifdef __ANDROID__
     void *handle = dlopen("libnuma.so", RTLD_LOCAL|RTLD_LAZY);
+#else
+    void *handle = dlopen("libnuma.so.1", RTLD_LAZY);
+#endif
     if (handle != nullptr) {
       set_numa_node_to_cpus(CAST_TO_FN_PTR(numa_node_to_cpus_func_t,
                                            libnuma_dlsym(handle, "numa_node_to_cpus")));
