@@ -3194,7 +3194,8 @@ void os::Linux::sched_getcpu_init() {
   }
 
   if (sched_getcpu() == -1) {
-    vm_exit_during_initialization("getcpu(2) system call not supported by kernel");
+    //vm_exit_during_initialization("getcpu(2) system call not supported by kernel");
+    warning("getcpu(2) system call not supported by kernel");
   }
 }
 
