@@ -412,7 +412,7 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBFONTMANAGER, \
     JDK_LIBS_macosx := libawt_headless, \
     JDK_LIBS_unix := java.base:libjvm, \
     LIBS := $(LIBFONTMANAGER_LIBS), \
-    LIBS_unix := $(LIBM), \
+    LIBS_unix := libawt_headless $(LIBM), \
     LIBS_macosx := \
         -framework CoreFoundation \
         -framework CoreGraphics \
