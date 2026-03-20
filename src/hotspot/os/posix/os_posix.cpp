@@ -2192,7 +2192,21 @@ int os::fork_and_exec(const char* cmd) {
   // Note: cast is needed because posix_spawn() requires - for compatibility with ancient
   // C-code - a non-const argv/envp pointer array. But it is fine to hand in literal
   // strings and just cast the constness away. See also ProcessImpl_md.c.
+#if defined(__ANDROID__) && __ANDROID_API__ < 28
+  #include <android/api-level.h>
+  #include <simple_posix_spawn.h>
+
+  int rc = 0;
+  int deviceApiLevel = android_get_device_api_level();
+  if (deviceApiLevel >= 28) {
+    rc = ::posix_spawn(&pid, "/bin/sh", nullptr, nullptr, (char**) argv, env);
+  } else {
+    rc = ::simple_posix_spawn(&pid, "/bin/sh", nullptr, nullptr, (char**) argv, env);
+  }
+#else
   int rc = ::posix_spawn(&pid, "/bin/sh", nullptr, nullptr, (char**) argv, env);
+#endif
+
   if (rc == 0) {
     int status;
     // Wait for the child process to exit.  This returns immediately if
