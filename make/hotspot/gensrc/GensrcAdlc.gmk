@@ -37,7 +37,7 @@ ifeq ($(call check-jvm-feature, compiler2), true)
 
   # Flags depending on the build platform/tool chain
   # NOTE: No optimization or debug flags set here
-  ifeq ($(call isBuildOs, linux android), true)
+  ifeq ($(call isBuildOs, linux), true)
     ADLC_CFLAGS := -fno-exceptions -DLINUX
   else ifeq ($(call isBuildOs, aix), true)
     ADLC_LDFLAGS += -m64
