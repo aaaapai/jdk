@@ -35,10 +35,11 @@
 m4_include([toolchain_microsoft.m4])
 
 # All valid toolchains, regardless of platform (used by help.m4)
-VALID_TOOLCHAINS_all="gcc clang microsoft"
+VALID_TOOLCHAINS_all="clang gcc microsoft"
 
 # These toolchains are valid on different platforms
-VALID_TOOLCHAINS_linux="gcc clang"
+VALID_TOOLCHAINS_linux="clang gcc"
+VALID_TOOLCHAINS_linux="clang gcc"
 VALID_TOOLCHAINS_macosx="clang"
 VALID_TOOLCHAINS_aix="clang"
 VALID_TOOLCHAINS_windows="microsoft"
