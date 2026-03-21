@@ -227,7 +227,6 @@ AC_DEFUN_ONCE([TOOLCHAIN_DETERMINE_TOOLCHAIN_TYPE],
 
     exit 0
   elif test "x$with_toolchain_type" != x; then
-    # User override; check that it is valid
     TOOLCHAIN_TYPE=$with_toolchain_type
   else
     # No flag given, use default
