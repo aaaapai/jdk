@@ -462,13 +462,13 @@ AC_DEFUN([FLAGS_SETUP_CFLAGS],
 AC_DEFUN([FLAGS_SETUP_CFLAGS_HELPER],
 [
   #### OS DEFINES, these should be independent on toolchain
-  elif test "x$OPENJDK_TARGET_OS" = xandroid; then
+  if test "x$OPENJDK_TARGET_OS" = xandroid; then
     CFLAGS_OS_DEF_JVM="-DLINUX -D_ALLBSD_SOURCE -D_FILE_OFFSET_BITS=64 -DANDROID"
     CFLAGS_OS_DEF_JDK="-DLINUX -D__USE_BSD -D_FILE_OFFSET_BITS=64"
   elif test "x$OPENJDK_TARGET_OS" = xios; then
     CFLAGS_OS_DEF_JVM="-D_ALLBSD_SOURCE -D__IOS__ -D_XOPEN_SOURCE"
     CFLAGS_OS_DEF_JDK="-D_ALLBSD_SOURCE -D__IOS__"
-  if test "x$OPENJDK_TARGET_OS" = xlinux; then
+  elif test "x$OPENJDK_TARGET_OS" = xlinux; then
     CFLAGS_OS_DEF_JVM="-DLINUX -D_FILE_OFFSET_BITS=64"
     CFLAGS_OS_DEF_JDK="-D_GNU_SOURCE -D_REENTRANT -D_FILE_OFFSET_BITS=64"
   elif test "x$OPENJDK_TARGET_OS" = xmacosx; then
