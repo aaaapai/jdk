@@ -25,7 +25,7 @@
 #ifndef OS_POSIX_FORBIDDENFUNCTIONS_POSIX_HPP
 #define OS_POSIX_FORBIDDENFUNCTIONS_POSIX_HPP
 
-#if !defined(__IOS__) || defined(__ANDROID__)
+#if !defined(__IOS__) || !defined(__ANDROID__)
 
 #include "utilities/compilerWarnings.hpp"
 
