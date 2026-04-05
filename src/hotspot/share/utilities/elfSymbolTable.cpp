@@ -29,7 +29,8 @@
 #include "utilities/checkedCast.hpp"
 #include "utilities/elfFuncDescTable.hpp"
 #include "utilities/elfSymbolTable.hpp"
-#ifdef __ANDROID__
+
+#if defined(__linux__)
 #include <linux/elf.h>
 #endif
 
