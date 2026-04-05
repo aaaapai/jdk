@@ -29,7 +29,7 @@
 
 #include "utilities/macros.hpp"
 
-#if defined(__IOS__) || defined(__ANDROID__)
+#if !defined(__IOS__) || !defined(__ANDROID__)
 
 #include COMPILER_HEADER(utilities/compilerWarnings)
 
