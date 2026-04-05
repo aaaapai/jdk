@@ -30,8 +30,6 @@
 #include "utilities/elfFuncDescTable.hpp"
 #include "utilities/elfSymbolTable.hpp"
 
-#include <elf.h>
-
 ElfSymbolTable::ElfSymbolTable(FILE* const file, Elf_Shdr& shdr) :
   _next(nullptr), _fd(file), _section(file, shdr) {
   assert(file != nullptr, "null file handle");
