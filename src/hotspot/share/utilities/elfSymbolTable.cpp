@@ -30,9 +30,7 @@
 #include "utilities/elfFuncDescTable.hpp"
 #include "utilities/elfSymbolTable.hpp"
 
-#if defined(__linux__)
-#include <linux/elf.h>
-#endif
+#include <elf.h>
 
 ElfSymbolTable::ElfSymbolTable(FILE* const file, Elf_Shdr& shdr) :
   _next(nullptr), _fd(file), _section(file, shdr) {
