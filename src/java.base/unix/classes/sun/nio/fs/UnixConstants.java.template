@@ -30,6 +30,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#ifdef __ANDROID__
+#include <linux/stat.h>
+#endif
 #ifdef _ALLBSD_SOURCE
 #include <sys/attr.h>
 #include <sys/clonefile.h>
