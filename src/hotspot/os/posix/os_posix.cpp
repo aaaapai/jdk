@@ -2185,6 +2185,10 @@ char** os::get_environ() { return environ; }
 //         doesn't block SIGINT et al.
 //        -this function is unsafe to use in non-error situations, mainly
 //         because the child process will inherit all parent descriptors.
+#if defined(__ANDROID__) && __ANDROID_API__ < 28
+#include <android/api-level.h>
+#include <simple_posix_spawn.h>
+#endif
 int os::fork_and_exec(const char* cmd) {
   const char* argv[4] = {"sh", "-c", cmd, nullptr};
   pid_t pid = -1;
@@ -2193,9 +2197,6 @@ int os::fork_and_exec(const char* cmd) {
   // C-code - a non-const argv/envp pointer array. But it is fine to hand in literal
   // strings and just cast the constness away. See also ProcessImpl_md.c.
 #if defined(__ANDROID__) && __ANDROID_API__ < 28
-  #include <android/api-level.h>
-  #include <simple_posix_spawn.h>
-
   int rc = 0;
   int deviceApiLevel = android_get_device_api_level();
   if (deviceApiLevel >= 28) {
