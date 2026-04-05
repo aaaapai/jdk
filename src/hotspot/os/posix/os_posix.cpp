@@ -2201,7 +2201,7 @@ int os::fork_and_exec(const char* cmd) {
   if (deviceApiLevel >= 28) {
     rc = ::posix_spawn(&pid, "/bin/sh", nullptr, nullptr, (char**) argv, env);
   } else {
-    rc = ::simple_posix_spawn(&pid, "/bin/sh", nullptr, nullptr, (char**) argv, env);
+    rc = simple_posix_spawn(&pid, "/bin/sh", nullptr, nullptr, (char**) argv, env);
   }
 #else
   int rc = ::posix_spawn(&pid, "/bin/sh", nullptr, nullptr, (char**) argv, env);
