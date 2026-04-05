@@ -29,6 +29,9 @@
 #include "utilities/checkedCast.hpp"
 #include "utilities/elfFuncDescTable.hpp"
 #include "utilities/elfSymbolTable.hpp"
+#ifdef __ANDROID__
+#include <linux/elf.h>
+#endif
 
 ElfSymbolTable::ElfSymbolTable(FILE* const file, Elf_Shdr& shdr) :
   _next(nullptr), _fd(file), _section(file, shdr) {
