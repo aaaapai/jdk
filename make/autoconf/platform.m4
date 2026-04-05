@@ -538,6 +538,8 @@ AC_DEFUN([PLATFORM_SETUP_LEGACY_VARS_HELPER],
 
   # Convert openjdk platform names to hotspot names
 
+  HOTSPOT_$1_OS=${OPENJDK_$1_OS}
+
   if test "x$OPENJDK_$1_OS" = xios; then
     HOTSPOT_$1_OS=bsd
   fi
@@ -546,10 +548,10 @@ AC_DEFUN([PLATFORM_SETUP_LEGACY_VARS_HELPER],
     HOTSPOT_$1_OS=linux
   fi
 
-  HOTSPOT_$1_OS=${OPENJDK_$1_OS}
   if test "x$OPENJDK_$1_OS" = xmacosx; then
     HOTSPOT_$1_OS=bsd
   fi
+
   AC_SUBST(HOTSPOT_$1_OS)
 
   HOTSPOT_$1_OS_TYPE=${OPENJDK_$1_OS_TYPE}
