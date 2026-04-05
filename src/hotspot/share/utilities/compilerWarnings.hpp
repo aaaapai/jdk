@@ -29,6 +29,8 @@
 
 #include "utilities/macros.hpp"
 
+#if defined(__IOS__) || defined(__ANDROID__)
+
 #include COMPILER_HEADER(utilities/compilerWarnings)
 
 // Defaults when not defined for the TARGET_COMPILER_xxx.
@@ -168,4 +170,5 @@
 #define END_ALLOW_FORBIDDEN_FUNCTIONS           \
   PRAGMA_DIAG_POP
 
+#endif
 #endif // SHARE_UTILITIES_COMPILERWARNINGS_HPP
