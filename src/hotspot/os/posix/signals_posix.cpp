@@ -580,6 +580,7 @@ int JVM_HANDLE_XXX_SIGNAL(int sig, siginfo_t* info,
   ucontext_t* const uc = (ucontext_t*) ucVoid;
   Thread* const t = Thread::current_or_null_safe();
 
+#if defined(__IOS__)
   // Hopefully placing W^X handing here is safe enough, maybe check repeat?
   if (!os::Bsd::isRWXJITAvailable() && sig == SIGBUS) {
     address pc = (address) os::Posix::ucontext_get_pc(uc);
@@ -598,6 +599,7 @@ int JVM_HANDLE_XXX_SIGNAL(int sig, siginfo_t* info,
       if (handled) return true;
     }
   }
+#endif
 
   // Handle JFR thread crash protection.
   //  Note: this may cause us to longjmp away. Do not use any code before this
