@@ -2188,6 +2188,11 @@ char** os::get_environ() { return environ; }
 #if defined(__ANDROID__) && __ANDROID_API__ < 28
 #include <android/api-level.h>
 #include <simple_posix_spawn.h>
+extern "C" {
+    __attribute__((weak)) int posix_spawn(pid_t* __pid, const char* __path,
+                                          const void* __actions, const void* __attr,
+                                          char* const __argv[], char* const __env[]);
+}
 #endif
 int os::fork_and_exec(const char* cmd) {
   const char* argv[4] = {"sh", "-c", cmd, nullptr};
@@ -2202,7 +2207,7 @@ int os::fork_and_exec(const char* cmd) {
   if (deviceApiLevel >= 28) {
     rc = ::posix_spawn(&pid, "/bin/sh", nullptr, nullptr, (char**) argv, env);
   } else {
-    rc = simple_posix_spawn(&pid, "/bin/sh", nullptr, nullptr, (char**) argv, env);
+    rc = ::simple_posix_spawn(&pid, "/bin/sh", nullptr, nullptr, (char**) argv, env);
   }
 #else
   int rc = ::posix_spawn(&pid, "/bin/sh", nullptr, nullptr, (char**) argv, env);
