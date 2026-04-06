@@ -530,11 +530,9 @@ forkChild(ChildStuff *c) {
 #if defined(__ANDROID__) && __ANDROID_API__ < 28
 #include <android/api-level.h>
 #include <simple_posix_spawn.h>
-extern "C" {
-    __attribute__((weak)) int posix_spawn(pid_t* __pid, const char* __path,
+__attribute__((weak)) int posix_spawn(pid_t* __pid, const char* __path,
                                           const void* __actions, const void* __attr,
                                           char* const __argv[], char* const __env[]);
-}
 #endif
 static pid_t
 spawnChild(JNIEnv *env, jobject process, ChildStuff *c, const char *helperpath) {
@@ -591,7 +589,7 @@ spawnChild(JNIEnv *env, jobject process, ChildStuff *c, const char *helperpath) 
         }
     }
 
-#if defined(__ANDROID__) && __ANDROID_API < 28
+#if defined(__ANDROID__) && __ANDROID_API__ < 28
     int deviceApiLevel = android_get_device_api_level();
     if (deviceApiLevel >= 28) {
       rval = posix_spawn(&resultPid, helperpath, 0, 0, (char * const *) hlpargs, environ);
