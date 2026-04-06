@@ -50,7 +50,7 @@ ifeq ($(call isTargetOs, macosx), true)
 	$(call MakeTargetDir)
 	$(MIG) $(MIG_SYSROOT_FLAGS) \
 	    -server $@ -user $(MACH_EXC_USER) \
-	    -header $(MACH_EXC_HEADER)  $(SYSROOT)/usr/include/mach/mach_exc.defs
+	    -header $(MACH_EXC_HEADER) $(SYSROOT)/usr/include/mach/mach_exc.defs
 
   TARGETS += $(MACH_EXC_SERVER)
 endif
