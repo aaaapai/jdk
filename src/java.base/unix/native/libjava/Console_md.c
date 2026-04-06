@@ -30,6 +30,7 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdio.h>
 
 JNIEXPORT jint JNICALL
 Java_java_io_Console_ttyStatus(JNIEnv *env, jclass cls)
