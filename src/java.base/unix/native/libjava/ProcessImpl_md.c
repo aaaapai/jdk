@@ -527,11 +527,15 @@ forkChild(ChildStuff *c) {
     return resultPid;
 }
 
-#if defined(__ANDROID__) && __ANDROID_API < 28
-#include <simple_posix_spawn.h>
+#if defined(__ANDROID__) && __ANDROID_API__ < 28
 #include <android/api-level.h>
+#include <simple_posix_spawn.h>
+extern "C" {
+    __attribute__((weak)) int posix_spawn(pid_t* __pid, const char* __path,
+                                          const void* __actions, const void* __attr,
+                                          char* const __argv[], char* const __env[]);
+}
 #endif
-
 static pid_t
 spawnChild(JNIEnv *env, jobject process, ChildStuff *c, const char *helperpath) {
     pid_t resultPid;
