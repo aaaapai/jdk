@@ -22,6 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+#include <iconv.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -29,7 +30,6 @@
 #include <ctype.h>
 #include <locale.h>
 #include <langinfo.h>
-#include <iconv.h>
 
 /* Routines to convert back and forth between Platform Encoding and UTF-8 */
 
