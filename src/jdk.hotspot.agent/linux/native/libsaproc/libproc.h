@@ -39,10 +39,14 @@
 #endif
 #if defined(aarch64) || defined(arm64)
 #include <asm/ptrace.h>
+#if !defined(__BIONIC__)
 #define user_regs_struct user_pt_regs
+#endif
 #elif defined(arm)
 #include <asm/ptrace.h>
+#if !defined(__BIONIC__)
 #define user_regs_struct  pt_regs
+#endif
 #elif defined(riscv64)
 #include <asm/ptrace.h>
 #endif
