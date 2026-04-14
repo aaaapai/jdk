@@ -45,6 +45,7 @@
 #include <sys/user.h>
 #endif
 
+/*
 #ifdef __ANDROID__
 #if !defined(HAVE_USER_REGS_STRUCT)
 #if defined(__aarch64__)
@@ -114,6 +115,7 @@ struct user_regs_struct {
 #endif
 #endif // !defined(HAVE_USER_REGS_STRUCT)
 #endif // __ANDROID__
+*/
 
 // This file has the libproc implementation to read core files.
 // For live processes, refer to ps_proc.c. Portions of this is adapted
