@@ -66,7 +66,7 @@ $(eval $(call SetupBuildLauncher, keytool, \
     MAIN_CLASS := sun.security.tools.keytool.Main, \
 ))
 
-ifeq ($(call isTargetOs, linux), true)
+ifeq ($(call isTargetOs, linux android), true)
   ##############################################################################
   ## Build jexec
   ##############################################################################
@@ -76,7 +76,7 @@ ifeq ($(call isTargetOs, linux), true)
       EXTRA_FILES := $(TOPDIR)/src/$(MODULE)/unix/native/launcher/jexec.c, \
       OPTIMIZATION := LOW, \
       EXTRA_HEADER_DIRS := libjli, \
-      CFLAGS_linux := -fPIC, \
+      CFLAGS_unix := -fPIC, \
       LD_SET_ORIGIN := false, \
       OUTPUT_DIR := $(SUPPORT_OUTPUTDIR)/modules_libs/$(MODULE), \
   ))
