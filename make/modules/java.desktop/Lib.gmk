@@ -52,7 +52,7 @@ ifeq ($(call isTargetOs, aix), false)
       #
 
   LIBJSOUND_LINK_TYPE := C
-  ifeq ($(call isTargetOs, macosx), true)
+  ifeq ($(call isTargetOs, macosx android), true)
     LIBJSOUND_LINK_TYPE := C++
   endif
 
@@ -69,6 +69,7 @@ ifeq ($(call isTargetOs, aix), false)
           unused-but-set-variable, \
       DISABLED_WARNINGS_clang_DirectAudioDevice.c := unused-function, \
       LIBS_linux := $(ALSA_LIBS), \
+      LIBS_android := OpenSLES \
       LIBS_macosx := \
           -framework AudioToolbox \
           -framework AVFoundation \
