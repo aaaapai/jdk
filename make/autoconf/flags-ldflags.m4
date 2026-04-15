@@ -74,17 +74,19 @@ AC_DEFUN([FLAGS_SETUP_LDFLAGS_HELPER],
     LDFLAGS_LTO="-flto=auto -fuse-linker-plugin -fno-strict-aliasing $DEBUG_PREFIX_CFLAGS"
     LDFLAGS_CXX_PARTIAL_LINKING="$MACHINE_FLAG -r"
 
-    if test "x$OPENJDK_TARGET_OS" = xlinux; then
-      # Clang needs the lld linker to work correctly
+    if test "x$OPENJDK_TARGET_OS" = xlinux || test "x$OPENJDK_TARGET_OS" = xandroid; then
       BASIC_LDFLAGS="-fuse-ld=lld -Wl,--exclude-libs,ALL"
-      if test "x$CXX_IS_USER_SUPPLIED" = xfalse && test "x$CC_IS_USER_SUPPLIED" = xfalse; then
-        UTIL_REQUIRE_TOOLCHAIN_PROGS(LLD, lld)
+      if test "x$OPENJDK_TARGET_OS" = xlinux; then
+        if test "x$CXX_IS_USER_SUPPLIED" = xfalse && test "x$CC_IS_USER_SUPPLIED" = xfalse; then
+          UTIL_REQUIRE_TOOLCHAIN_PROGS(LLD, lld)
+        fi
       fi
 
       if test "x$ENABLE_LINKTIME_GC" = xtrue; then
         BASIC_LDFLAGS_JDK_ONLY="$BASIC_LDFLAGS_JDK_ONLY -Wl,--gc-sections"
       fi
     fi
+
     if test "x$OPENJDK_TARGET_OS" = xaix; then
       BASIC_LDFLAGS="-Wl,-b64 -Wl,-brtl -Wl,-bnorwexec -Wl,-blibpath:/usr/lib:lib -Wl,-bnoexpall \
         -Wl,-bernotok -Wl,-bcdtors:mbr::s -Wl,-bdatapsize:64k -Wl,-btextpsize:64k -Wl,-bstackpsize:64k"
