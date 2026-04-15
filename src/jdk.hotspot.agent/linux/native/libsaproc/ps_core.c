@@ -64,7 +64,6 @@ typedef struct prstatus {
     int pr_fpvalid;
 } prstatus_t;
 
-prstatus_t* prstat = (prstatus_t*) buf;
 #endif // __ANDROID__ && !PRSTATUS_T_DEFINED
 
 /*
@@ -299,6 +298,7 @@ static bool core_handle_prstatus(struct ps_prochandle* ph, const char* buf, size
    }
 
    // copy regs
+   prstatus_t* prstat = (prstatus_t*) buf;
    memcpy(&newthr->regs, prstat->pr_reg, sizeof(struct user_regs_struct));
 
    if (is_debug()) {
