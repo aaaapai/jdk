@@ -183,7 +183,7 @@ define SetupBuildLauncherBody
       DISABLED_WARNINGS_gcc := unused-function unused-variable, \
       DISABLED_WARNINGS_clang := unused-function, \
       LDFLAGS := $$($1_LDFLAGS), \
-      LDFLAGS_linux := $$(call SetExecutableOrigin,/../lib), \
+      LDFLAGS_unix := $$(call SetExecutableOrigin,/../lib), \
       LDFLAGS_macosx := $$(call SetExecutableOrigin,/../lib), \
       LDFLAGS_FILTER_OUT := $$($1_LDFLAGS_FILTER_OUT), \
       JDK_LIBS := $$($1_JDK_LIBS), \
