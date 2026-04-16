@@ -289,7 +289,6 @@ static ps_prochandle_ops core_ops = {
 static bool core_handle_prstatus(struct ps_prochandle* ph, const char* buf, size_t nbytes) {
    // we have to read prstatus_t from buf
    // assert(nbytes == sizeof(prstaus_t), "size mismatch on prstatus_t");
-   prstatus_t* prstat = (prstatus_t*) buf;
    thread_info* newthr;
    print_debug("got integer regset for lwp %d\n", prstat->pr_pid);
    if((newthr = add_thread_info(ph, prstat->pr_pid)) == NULL) {
