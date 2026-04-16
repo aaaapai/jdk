@@ -1108,6 +1108,7 @@ bool os::same_files(const char* file1, const char* file2) {
 
 static char saved_jvm_path[MAXPATHLEN] = {0};
 
+#ifdef __ANDROID__
 static bool read_so_path_from_maps(const char* so_name, char* buf, int buflen);
 static bool read_so_path_from_maps(const char* so_name, char* buf, int buflen) {
   FILE *fp = fopen("/proc/self/maps", "r");
@@ -1135,6 +1136,7 @@ static bool read_so_path_from_maps(const char* so_name, char* buf, int buflen) {
 // Loads .dll/.so and
 // in case of error it checks if .dll/.so was built for the
 // same architecture as Hotspot is running on
+#endif
 
 // Find the full path to the current module, libjvm.so
 void os::jvm_path(char *buf, jint buflen) {
