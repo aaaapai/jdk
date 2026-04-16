@@ -375,20 +375,23 @@ Java_sun_nio_fs_UnixNativeDispatcher_init(JNIEnv* env, jclass this)
 #ifdef _DARWIN_FEATURE_64_BIT_INODE
     capabilities |= sun_nio_fs_UnixNativeDispatcher_SUPPORTS_BIRTHTIME;
 #endif
-#ifdef __linux__
+#if defined(__linux__) && !defined(__ANDROID__)
     my_statx_func = (statx_func*) dlsym(RTLD_DEFAULT, "statx");
     if (my_statx_func != NULL) {
-#ifndef __ANDROID__
-            capabilities |= sun_nio_fs_UnixNativeDispatcher_SUPPORTS_BIRTHTIME;
-#else
-            struct statx buf;
-            int fd = open("/proc/self/exe", O_RDONLY);
-            if (fd != -1) {
-                if (my_statx_func(fd, "", AT_EMPTY_PATH, STATX_BASIC_STATS, &buf) == 0)
-                    capabilities |= sun_nio_fs_UnixNativeDispatcher_SUPPORTS_BIRTHTIME;
-                close(fd);
+        capabilities |= sun_nio_fs_UnixNativeDispatcher_SUPPORTS_BIRTHTIME;
+    }
+#elif defined(__ANDROID__)
+    typedef int (*statx_func_t)(int, const char*, int, unsigned int, struct statx*);
+    statx_func_t statx_func = (statx_func_t) dlsym(RTLD_DEFAULT, "statx");
+    if (statx_func != NULL) {
+        struct statx buf;
+        int fd = open("/proc/self/exe", O_RDONLY);
+        if (fd != -1) {
+            if (statx_func(fd, "", AT_EMPTY_PATH, STATX_BASIC_STATS, &buf) == 0) {
+                capabilities |= sun_nio_fs_UnixNativeDispatcher_SUPPORTS_BIRTHTIME;
             }
-#endif
+            close(fd);
+        }
     }
 #endif
 
