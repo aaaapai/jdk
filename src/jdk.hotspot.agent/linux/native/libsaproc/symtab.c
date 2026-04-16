@@ -390,9 +390,16 @@ static struct symtab* build_symtab_internal(int fd, const char *filename, bool t
         goto bad;
       }
 
+#if !defined(__ANDROID__) || (defined(__ANDROID__) && __ANDROID_API__ >= 28)
       if (hcreate_r(htab_sz, symtab->hash_table) == 0) {
         goto bad;
       }
+#else
+      
+      if (simple_hcreate_r(htab_sz, symtab->hash_table) == 0) {
+        goto bad;
+      }
+#endif
 
       // shdr->sh_link points to the section that contains the actual strings
       // for symbol names. the st_name field in ELF_SYM is just the
