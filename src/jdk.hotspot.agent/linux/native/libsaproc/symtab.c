@@ -448,7 +448,11 @@ static struct symtab* build_symtab_internal(int fd, const char *filename, bool t
         symtab->symbols[j].offset = sym_value - baseaddr;
         item.key = sym_name;
         item.data = (void *)&(symtab->symbols[j]);
+#if !defined(__ANDROID__) || (defined(__ANDROID__) && __ANDROID_API__ >= 28)
         hsearch_r(item, ENTER, &ret, symtab->hash_table);
+#else
+        simple_hsearch_r(item, ENTER, &ret, symtab->hash_table);
+#endif
       }
     }
   }
@@ -528,7 +532,11 @@ void destroy_symtab(struct symtab* symtab) {
   if (symtab->strs) free(symtab->strs);
   if (symtab->symbols) free(symtab->symbols);
   if (symtab->hash_table) {
+#if !defined(__ANDROID__) || (defined(__ANDROID__) && __ANDROID_API__ >= 28)
      hdestroy_r(symtab->hash_table);
+#else
+     simple_hdestroy_r(symtab->hash_table);
+#endif
      free(symtab->hash_table);
   }
   free(symtab);
@@ -545,7 +553,11 @@ uintptr_t search_symbol(struct symtab* symtab, uintptr_t base,
 
   item.key = (char*) strdup(sym_name);
   item.data = NULL;
+#if !defined(__ANDROID__) || (defined(__ANDROID__) && __ANDROID_API__ >= 28)
   hsearch_r(item, FIND, &ret, symtab->hash_table);
+#else
+  simple_hsearch_r(item, FIND, &ret, symtab->hash_table);
+#endif
   if (ret) {
     struct elf_symbol * sym = (struct elf_symbol *)(ret->data);
     uintptr_t rslt = (uintptr_t) ((char*)base + sym->offset);
