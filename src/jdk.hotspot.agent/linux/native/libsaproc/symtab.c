@@ -27,6 +27,7 @@
 #include <search.h>
 #include <stdlib.h>
 #include <string.h>
+#include <builder_search.h>
 #include "symtab.h"
 #include "salibelf.h"
 
