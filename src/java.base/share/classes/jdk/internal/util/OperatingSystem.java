@@ -83,6 +83,10 @@ public enum OperatingSystem {
      */
     AIX,
     /**
+     * The Android Operating system.
+     */
+    ANDROID,
+    /**
      * The iOS Operating system.
      */
     IOS,
@@ -121,6 +125,13 @@ public enum OperatingSystem {
     @ForceInline
     public static boolean isAix() {
         return PlatformProps.TARGET_OS_IS_AIX;
+    }
+
+    /**
+     * {@return {@code true} if built for the Android operating system}
+     */
+    public static boolean isAndroid() {
+        return PlatformProps.TARGET_OS_IS_ANDROID;
     }
 
     /**
