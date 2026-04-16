@@ -190,7 +190,7 @@ AC_DEFUN_ONCE([LIB_SETUP_MISC_LIBS],
   LIBS="$save_LIBS"
 
   # Setup posix pthread support
-  if test "x$OPENJDK_TARGET_OS" != "xwindows"; then
+  if test "x$OPENJDK_TARGET_OS" != "xwindows" && test "x$OPENJDK_TARGET_OS" != "xandroid"; then
     LIBPTHREAD="-lpthread"
   else
     LIBPTHREAD=""
