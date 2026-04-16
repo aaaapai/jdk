@@ -290,6 +290,7 @@ static bool core_handle_prstatus(struct ps_prochandle* ph, const char* buf, size
    // we have to read prstatus_t from buf
    // assert(nbytes == sizeof(prstaus_t), "size mismatch on prstatus_t");
    thread_info* newthr;
+   prstatus_t* prstat = (prstatus_t*) buf;
    print_debug("got integer regset for lwp %d\n", prstat->pr_pid);
    if((newthr = add_thread_info(ph, prstat->pr_pid)) == NULL) {
       print_error("failed to add thread info\n");
@@ -297,7 +298,6 @@ static bool core_handle_prstatus(struct ps_prochandle* ph, const char* buf, size
    }
 
    // copy regs
-   prstatus_t* prstat = (prstatus_t*) buf;
    memcpy(&newthr->regs, prstat->pr_reg, sizeof(struct user_regs_struct));
 
    if (is_debug()) {
