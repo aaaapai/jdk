@@ -1909,7 +1909,7 @@ void PlatformEvent::unpark() {
  PlatformParker::PlatformParker() : _counter(0), _cur_index(-1) {
   int status = pthread_cond_init(&_cond[REL_INDEX], _condAttr);
   assert_status(status == 0, status, "cond_init rel");
-  status = pthread_cond_init(&_cond[ABS_INDEX], nullptr);
+  status = pthread_cond_init(&_cond[ABS_INDEX], _condAttr);
   assert_status(status == 0, status, "cond_init abs");
   status = pthread_mutex_init(_mutex, _mutexAttr);
   assert_status(status == 0, status, "mutex_init");
