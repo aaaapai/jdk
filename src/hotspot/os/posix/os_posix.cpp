@@ -2088,7 +2088,16 @@ PlatformMutex::~PlatformMutex() {
 }
 
 PlatformMonitor::Cond::Cond() : _next(nullptr) {
-  int status = pthread_cond_init(&_cond, _condAttr);
+  int status;
+#ifdef __ANDROID__
+  pthread_condattr_t attrs;
+  pthread_condattr_init(&attrs);
+  pthread_condattr_setclock(&attrs, CLOCK_MONOTONIC);
+  status = pthread_cond_init(&_cond, &attrs);
+  pthread_condattr_destroy(&attrs);
+#else
+  status = pthread_cond_init(&_cond, _condAttr);
+#endif
   assert_status(status == 0, status, "cond_init");
 }
 
@@ -2131,7 +2140,16 @@ PlatformMutex::~PlatformMutex() {
 }
 
 PlatformMonitor::PlatformMonitor() {
-  int status = pthread_cond_init(&_cond, _condAttr);
+  int status;
+#ifdef __ANDROID__
+  pthread_condattr_t attrs;
+  pthread_condattr_init(&attrs);
+  pthread_condattr_setclock(&attrs, CLOCK_MONOTONIC);
+  status = pthread_cond_init(&_cond, &attrs);
+  pthread_condattr_destroy(&attrs);
+#else
+  status = pthread_cond_init(&_cond, _condAttr);
+#endif
   assert_status(status == 0, status, "cond_init");
 }
 
