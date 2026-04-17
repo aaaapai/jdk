@@ -53,7 +53,60 @@
 #include "jfr/jfr.hpp"
 #endif
 
+#if !defined(__ANDROID__)
 THREAD_LOCAL Thread* Thread::_thr_current = nullptr;
+#endif
+
+#if defined(__ANDROID__)
+#include <stdint.h>
+
+#if defined(__aarch64__)
+static inline void* android_tls_base() {
+    void* result;
+    __asm__ __volatile__("mrs %0, tpidr_el0" : "=r"(result));
+    return result;
+}
+#elif defined(__arm__)
+static inline void* android_tls_base() {
+    void* result;
+    __asm__ __volatile__("mrc p15, 0, %0, c13, c0, 3" : "=r"(result));
+    return result;
+}
+#elif defined(__x86_64__)
+static inline void* android_tls_base() {
+    void* result;
+    __asm__ __volatile__("mov %%fs:0, %0" : "=r"(result));
+    return result;
+}
+#elif defined(__i386__)
+static inline void* android_tls_base() {
+    void* result;
+    __asm__ __volatile__("mov %%gs:0, %0" : "=r"(result));
+    return result;
+}
+#elif defined(__riscv) && (__riscv_xlen == 64)
+static inline void* android_tls_base() {
+    void* result;
+    __asm__ __volatile__("mv %0, tp" : "=r"(result));
+    return result;
+}
+#else
+#error "Unsupported architecture for Android TLS"
+#endif
+
+#define ANDROID_TLS_SLOT_THR_CURRENT (-4)
+#define ANDROID_TLS_OFFSET (ANDROID_TLS_SLOT_THR_CURRENT * sizeof(void*))
+
+Thread* android_get_current_thread() {
+    char* tls = (char*)android_tls_base();
+    return *(Thread**)(tls + ANDROID_TLS_OFFSET);
+}
+
+void android_set_current_thread(Thread* t) {
+    char* tls = (char*)android_tls_base();
+    *(Thread**)(tls + ANDROID_TLS_OFFSET) = t;
+}
+#endif // __ANDROID__
 
 // ======= Thread ========
 // Base class for all threads: VMThread, WatcherThread, ConcurrentMarkSweepThread,
@@ -174,8 +227,13 @@ void Thread::fill_tlab(HeapWord* start, size_t pre_reserved, size_t new_size) {
 }
 
 void Thread::initialize_thread_current() {
+#ifdef __ANDROID__
+  assert(android_get_current_thread() == nullptr, "Thread::current already initialized");
+  android_set_current_thread(this);
+#else
   assert(_thr_current == nullptr, "Thread::current already initialized");
   _thr_current = this;
+#endif
   assert(ThreadLocalStorage::thread() == nullptr, "ThreadLocalStorage::thread already initialized");
   ThreadLocalStorage::set_thread(this);
   assert(Thread::current() == ThreadLocalStorage::thread(), "TLS mismatch!");
@@ -183,7 +241,11 @@ void Thread::initialize_thread_current() {
 
 void Thread::clear_thread_current() {
   assert(Thread::current() == ThreadLocalStorage::thread(), "TLS mismatch!");
+#ifdef __ANDROID__
+  android_set_current_thread(nullptr);
+#else
   _thr_current = nullptr;
+#endif
   ThreadLocalStorage::set_thread(nullptr);
 }
 
