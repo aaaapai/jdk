@@ -27,15 +27,6 @@
         // Return the current thread pointer in x0.
         // Clobber x1, flags.
         // All other registers are preserved,
-#if defined(__ANDROID__)
-
-DECLARE_FUNC(_ZN10JavaThread25aarch64_get_thread_helperEv):
-        hint #0x19              // paciasp
-        mrs     x0, tpidr_el0
-        ldr     x0, [x0, #-32]
-        ret
-
-#else
 
 DECLARE_FUNC(_ZN10JavaThread25aarch64_get_thread_helperEv):
         hint #0x19      // paciasp
@@ -51,8 +42,6 @@ DECLARE_FUNC(_ZN10JavaThread25aarch64_get_thread_helperEv):
         ldp x29, x30, [sp], 16
         hint #0x1d      // autiasp
         ret
-
-#endif // __ANDROID__
 
         .size _ZN10JavaThread25aarch64_get_thread_helperEv, .-_ZN10JavaThread25aarch64_get_thread_helperEv
 
