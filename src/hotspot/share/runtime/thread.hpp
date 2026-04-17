@@ -658,7 +658,11 @@ inline Thread* Thread::current() {
 }
 
 inline Thread* Thread::current_or_null() {
-  return _thr_current;
+#if defined(__ANDROID__)
+    return android_get_current_thread();
+#else
+    return _thr_current;
+#endif
 }
 
 inline Thread* Thread::current_or_null_safe() {
