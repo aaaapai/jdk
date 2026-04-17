@@ -410,9 +410,9 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBFONTMANAGER, \
     LDFLAGS_aix := -Wl$(COMMA)-berok, \
     JDK_LIBS := libawt java.base:libjava $(LIBFONTMANAGER_JDK_LIBS), \
     JDK_LIBS_macosx := libawt_headless, \
-    JDK_LIBS_unix := java.base:libjvm, \
+    JDK_LIBS_unix := libawt_headless java.base:libjvm, \
     LIBS := $(LIBFONTMANAGER_LIBS), \
-    LIBS_unix := -lawt_headless $(LIBM), \
+    LIBS_unix := $(LIBM), \
     LIBS_macosx := \
         -framework CoreFoundation \
         -framework CoreGraphics \
