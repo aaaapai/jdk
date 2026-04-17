@@ -1909,7 +1909,7 @@ void PlatformEvent::unpark() {
  PlatformParker::PlatformParker() : _counter(0), _cur_index(-1) {
   int status = pthread_cond_init(&_cond[REL_INDEX], _condAttr);
   assert_status(status == 0, status, "cond_init rel");
-  status = pthread_cond_init(&_cond[ABS_INDEX], _condAttr);
+  status = pthread_cond_init(&_cond[ABS_INDEX], nullptr);
   assert_status(status == 0, status, "cond_init abs");
   status = pthread_mutex_init(_mutex, _mutexAttr);
   assert_status(status == 0, status, "mutex_init");
@@ -2088,16 +2088,7 @@ PlatformMutex::~PlatformMutex() {
 }
 
 PlatformMonitor::Cond::Cond() : _next(nullptr) {
-  int status;
-#ifdef __ANDROID__
-  pthread_condattr_t attrs;
-  pthread_condattr_init(&attrs);
-  pthread_condattr_setclock(&attrs, CLOCK_MONOTONIC);
-  status = pthread_cond_init(&_cond, &attrs);
-  pthread_condattr_destroy(&attrs);
-#else
-  status = pthread_cond_init(&_cond, _condAttr);
-#endif
+  int status = pthread_cond_init(&_cond, _condAttr);
   assert_status(status == 0, status, "cond_init");
 }
 
@@ -2133,6 +2124,7 @@ PlatformMonitor::~PlatformMonitor() {
 PlatformMutex::PlatformMutex() {
   int status = pthread_mutex_init(&_mutex, _mutexAttr);
   assert_status(status == 0, status, "mutex_init");
+}
 
 PlatformMutex::~PlatformMutex() {
   int status = pthread_mutex_destroy(&_mutex);
@@ -2140,16 +2132,7 @@ PlatformMutex::~PlatformMutex() {
 }
 
 PlatformMonitor::PlatformMonitor() {
-  int status;
-#ifdef __ANDROID__
-  pthread_condattr_t attrs;
-  pthread_condattr_init(&attrs);
-  pthread_condattr_setclock(&attrs, CLOCK_MONOTONIC);
-  status = pthread_cond_init(&_cond, &attrs);
-  pthread_condattr_destroy(&attrs);
-#else
-  status = pthread_cond_init(&_cond, _condAttr);
-#endif
+  int status = pthread_cond_init(&_cond, _condAttr);
   assert_status(status == 0, status, "cond_init");
 }
 
