@@ -2121,19 +2121,9 @@ PlatformMonitor::~PlatformMonitor() {
 
 #else
 
-PlatformMonitor::PlatformMonitor() {
-  int status;
-#ifdef __ANDROID__
-  pthread_condattr_t attrs;
-  pthread_condattr_init(&attrs);
-  pthread_condattr_setclock(&attrs, CLOCK_MONOTONIC);
-  status = pthread_cond_init(&_cond, &attrs);
-  pthread_condattr_destroy(&attrs);
-#else
-  status = pthread_cond_init(&_cond, _condAttr);
-#endif
-  assert_status(status == 0, status, "cond_init");
-}
+PlatformMutex::PlatformMutex() {
+  int status = pthread_mutex_init(&_mutex, _mutexAttr);
+  assert_status(status == 0, status, "mutex_init");
 
 PlatformMutex::~PlatformMutex() {
   int status = pthread_mutex_destroy(&_mutex);
