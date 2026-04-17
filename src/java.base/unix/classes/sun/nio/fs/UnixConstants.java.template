@@ -31,7 +31,6 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #ifdef _ALLBSD_SOURCE
-#include <sys/attr.h>
 #include <sys/clonefile.h>
 #endif
 
