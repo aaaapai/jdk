@@ -743,7 +743,7 @@ void os::Linux::libpthread_init() {
   os::Linux::set_libpthread_version("musl - unknown");
 #elif defined(__BIONIC__)
   os::Linux::set_libc_version("bionic - unknown");
-  os::Linux::set_libpthread_version("bionic - unknown");
+  os::Linux::set_libpthread_version("NPTL");
 #else
   size_t n = confstr(_CS_GNU_LIBC_VERSION, nullptr, 0);
   assert(n > 0, "cannot retrieve glibc version");
