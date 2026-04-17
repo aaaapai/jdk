@@ -22,12 +22,12 @@
 
 #include "defs.S.inc"
 
-// JavaThread::aarch64_get_thread_helper()
+        // JavaThread::aarch64_get_thread_helper()
         //
         // Return the current thread pointer in x0.
         // Clobber x1, flags.
         // All other registers are preserved,
-#ifdef __ANDROID__
+#if defined(__ANDROID__)
 
 DECLARE_FUNC(_ZN10JavaThread25aarch64_get_thread_helperEv):
         hint #0x19              // paciasp
