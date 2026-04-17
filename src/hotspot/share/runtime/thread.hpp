@@ -45,11 +45,6 @@
 #include "jfr/support/jfrThreadExtension.hpp"
 #endif
 
-#if defined(__ANDROID__)
-extern Thread* android_get_current_thread();
-extern void android_set_current_thread(Thread* t);
-#endif
-
 class CompilerThread;
 class HandleArea;
 class HandleMark;
@@ -121,9 +116,7 @@ class Thread: public ThreadShadow {
  private:
 
   // Current thread is maintained as a thread-local variable
-#if !defined(__ANDROID__)
   static THREAD_LOCAL Thread* _thr_current;
-#endif
 
   // On AArch64, the high order 32 bits are used by a "patching epoch" number
   // which reflects if this thread has executed the required fences, after
@@ -665,11 +658,7 @@ inline Thread* Thread::current() {
 }
 
 inline Thread* Thread::current_or_null() {
-#if defined(__ANDROID__)
-    return android_get_current_thread();
-#else
     return _thr_current;
-#endif
 }
 
 inline Thread* Thread::current_or_null_safe() {
