@@ -402,6 +402,8 @@ public final class ExtendedSocketOptions {
 
         private static PlatformSocketOptions create() {
             return switch (OperatingSystem.current()) {
+                case ANDROID -> newInstance("jdk.net.LinuxSocketOptions");
+                case IOS -> newInstance("jdk.net.MacOSXSocketOptions");
                 case LINUX -> newInstance("jdk.net.LinuxSocketOptions");
                 case MACOS -> newInstance("jdk.net.MacOSXSocketOptions");
                 case WINDOWS -> newInstance("jdk.net.WindowsSocketOptions");
