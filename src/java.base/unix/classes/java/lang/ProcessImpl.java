@@ -100,6 +100,7 @@ final class ProcessImpl extends Process {
             // Should be value of a LaunchMechanism enum
             LaunchMechanism lm = LaunchMechanism.valueOf(s.toUpperCase(Locale.ROOT));
             switch (OperatingSystem.current()) {
+                case ANDROID:
                 case LINUX: {
                     // All options are valid for Linux, but VFORK is deprecated and results
                     // in a warning
@@ -114,6 +115,7 @@ final class ProcessImpl extends Process {
                     }
                     return lm;
                 }
+                case IOS:
                 case AIX:
                 case MACOS:
                     if (lm != LaunchMechanism.VFORK) {
@@ -325,6 +327,8 @@ final class ProcessImpl extends Process {
      */
     void initStreams(int[] fds, boolean forceNullOutputStream) throws IOException {
         switch (OperatingSystem.current()) {
+            case IOS:
+            case ANDROID:
             case LINUX:
             case MACOS:
                 stdin = (fds[0] == -1) ?
@@ -457,6 +461,8 @@ final class ProcessImpl extends Process {
 
     private void destroy(boolean force) {
         switch (OperatingSystem.current()) {
+            case IOS:
+            case ANDROID:
             case LINUX:
             case MACOS:
             case AIX:
