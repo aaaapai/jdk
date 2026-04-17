@@ -776,6 +776,12 @@ public final class StandardOption {
 
     private static String resourceKeySuffix(OperatingSystem os) {
         switch (os) {
+            case IOS -> {
+                return ".ios";
+            }
+            case ANDROID -> {
+                return ".android";
+            }
             case LINUX -> {
                 return ".linux";
             }
