@@ -131,13 +131,14 @@ final class ProcessImpl extends Process {
     }
 
     private static final LaunchMechanism launchMechanism = launchMechanism();
-    String jspawnhelperName;
+    private static String getJspawnhelperName() {
     if (OperatingSystem.isAndroid()) {
-        jspawnhelperName = "libjspawnhelper.so";
-    } else {
-        jspawnhelperName = "jspawnhelper";
+           return "libjspawnhelper.so";
+       } else {
+           return "jspawnhelper";
+       }
     }
-    private static final byte[] helperpath = toCString(StaticProperty.javaHome() + "/lib/" + jspawnhelperName);
+    private static final byte[] helperpath = toCString(StaticProperty.javaHome() + "/lib/" + getJspawnhelperName());
 
     private static byte[] toCString(String s) {
         if (s == null)
