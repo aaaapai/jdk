@@ -52,6 +52,10 @@
 #include "childproc.h"
 #include "childproc_errorcodes.h"
 
+#if !defined(__USE_GNU)
+int pipe2(int __fds[2], int __flags);
+#endif
+
 /*
  *
  * When starting a child on Unix, we need to do three things:
