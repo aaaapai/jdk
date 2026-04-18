@@ -89,8 +89,14 @@ ifeq ($(call isTargetOsType, unix), true)
   ## Build jspawnhelper
   ##############################################################################
 
+  ifeq ($(call isTargetOs, android), true)
+    JSPAWNHELPER_NAME := libjspawnhelper.so
+  else
+    JSPAWNHELPER_NAME := jspawnhelper
+  endif
+
   $(eval $(call SetupJdkExecutable, BUILD_JSPAWNHELPER, \
-      NAME := libjspawnhelper.so, \
+      NAME := $(JSPAWNHELPER_NAME), \
       OPTIMIZATION := LOW, \
       CFLAGS := $(VERSION_CFLAGS), \
       EXTRA_HEADER_DIRS := libjava, \
