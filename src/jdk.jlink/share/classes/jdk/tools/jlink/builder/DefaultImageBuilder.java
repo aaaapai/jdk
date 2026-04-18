@@ -210,7 +210,7 @@ public final class DefaultImageBuilder implements ImageBuilder {
                 // jspawnhelper is in lib or lib/<arch>
                 Path lib = root.resolve(LIB_DIRNAME);
                 String jspawnhelperName;
-                if (isAndroid()) {
+                if (OperatingSystem.isAndroid()) {
                    jspawnhelperName = "libjspawnhelper.so";
                 } else {
                    jspawnhelperName = "jspawnhelper";
