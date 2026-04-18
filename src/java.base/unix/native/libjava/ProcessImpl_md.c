@@ -485,7 +485,7 @@ static int call_posix_spawn_file_actions_adddup2(posix_spawn_file_actions_t *fil
     if (deviceApiLevel >= 28) {
       return posix_spawn_file_actions_adddup2(file_actions, filedes, newfiledes);
     } else {
-      return simple_posix_spawn_file_actions_adddup2(file_actions, filedes, newfiledes);
+      return simple_posix_spawn_file_actions_adddup2((simple_posix_spawn_file_actions_t *)&file_actions, filedes, newfiledes);
     }
 #else
     return posix_spawn_file_actions_adddup2(file_actions, filedes, newfiledes);
