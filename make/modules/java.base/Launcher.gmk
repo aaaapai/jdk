@@ -72,7 +72,7 @@ ifeq ($(call isTargetOs, linux android), true)
   ##############################################################################
 
   $(eval $(call SetupJdkExecutable, BUILD_JEXEC, \
-      NAME := jexec, \
+      NAME := libjexec.so, \
       EXTRA_FILES := $(TOPDIR)/src/$(MODULE)/unix/native/launcher/jexec.c, \
       OPTIMIZATION := LOW, \
       EXTRA_HEADER_DIRS := libjli, \
@@ -90,7 +90,7 @@ ifeq ($(call isTargetOsType, unix), true)
   ##############################################################################
 
   $(eval $(call SetupJdkExecutable, BUILD_JSPAWNHELPER, \
-      NAME := jspawnhelper, \
+      NAME := libjspawnhelper.so, \
       OPTIMIZATION := LOW, \
       CFLAGS := $(VERSION_CFLAGS), \
       EXTRA_HEADER_DIRS := libjava, \
