@@ -211,7 +211,7 @@ AC_DEFUN([FLAGS_SETUP_SYSROOT_FLAGS],
       $1SYSROOT_CFLAGS="--sysroot=[$]$1SYSROOT"
       $1SYSROOT_LDFLAGS="--sysroot=[$]$1SYSROOT"
     elif test "x$TOOLCHAIN_TYPE" = xclang; then
-      if test "x$OPENJDK_TARGET_OS" = "xlinux"; then
+      if test "x$OPENJDK_TARGET_OS" = "xlinux" || test "x$OPENJDK_TARGET_OS" = "xandroid"; then
         # -isysroot has no effect on linux
         # https://bugs.llvm.org/show_bug.cgi?id=11503
         $1SYSROOT_CFLAGS="--sysroot=[$]$1SYSROOT"
