@@ -52,6 +52,14 @@ JAVA_MANIFEST := $(TOPDIR)/src/java.base/windows/native/launcher/java.manifest
 INCLUDED_LAUNCHERS_FILE := $(SUPPORT_OUTPUTDIR)/modules_static-launchers/$(MODULE)/module-included-launchers.txt
 INCLUDED_LAUNCHERS :=
 
+ifeq ($(call isTargetOs, android), true)
+  LAUNCHER_CFLAGS += -I$(TOPDIR)/src/java.base/linux/native/libjli
+endif
+
+ifeq ($(call isTargetOs, ios), true)
+  LAUNCHER_CFLAGS += -I$(TOPDIR)/src/java.base/macos/native/libjli
+endif
+
 ################################################################################
 # Build standard launcher.
 
@@ -181,7 +189,7 @@ define SetupBuildLauncherBody
       DISABLED_WARNINGS_gcc := unused-function unused-variable, \
       DISABLED_WARNINGS_clang := unused-function, \
       LDFLAGS := $$($1_LDFLAGS), \
-      LDFLAGS_linux := $$(call SetExecutableOrigin,/../lib), \
+      LDFLAGS_unix := $$(call SetExecutableOrigin,/../lib), \
       LDFLAGS_macosx := $$(call SetExecutableOrigin,/../lib), \
       LDFLAGS_FILTER_OUT := $$($1_LDFLAGS_FILTER_OUT), \
       JDK_LIBS := $$($1_JDK_LIBS), \

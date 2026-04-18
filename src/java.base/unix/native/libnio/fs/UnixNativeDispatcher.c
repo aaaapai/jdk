@@ -375,10 +375,23 @@ Java_sun_nio_fs_UnixNativeDispatcher_init(JNIEnv* env, jclass this)
 #ifdef _DARWIN_FEATURE_64_BIT_INODE
     capabilities |= sun_nio_fs_UnixNativeDispatcher_SUPPORTS_BIRTHTIME;
 #endif
-#if defined(__linux__)
+#if defined(__linux__) && !defined(__ANDROID__)
     my_statx_func = (statx_func*) dlsym(RTLD_DEFAULT, "statx");
     if (my_statx_func != NULL) {
         capabilities |= sun_nio_fs_UnixNativeDispatcher_SUPPORTS_BIRTHTIME;
+    }
+#elif defined(__ANDROID__)
+    typedef int (*statx_func_t)(int, const char*, int, unsigned int, struct statx*);
+    statx_func_t statx_func = (statx_func_t) dlsym(RTLD_DEFAULT, "statx");
+    if (statx_func != NULL) {
+        struct statx buf;
+        int fd = open("/proc/self/exe", O_RDONLY);
+        if (fd != -1) {
+            if (statx_func(fd, "", AT_EMPTY_PATH, STATX_BASIC_STATS, &buf) == 0) {
+                capabilities |= sun_nio_fs_UnixNativeDispatcher_SUPPORTS_BIRTHTIME;
+            }
+            close(fd);
+        }
     }
 #endif
 
@@ -628,7 +641,7 @@ static void copy_stat_attributes(JNIEnv* env, struct stat* buf, jobject attrs) {
     // rely on default value of 0 for st_birthtime_nsec field on Darwin
 #endif
 
-#ifndef MACOSX
+#if !defined(MACOSX) && !defined(__IOS__)
     (*env)->SetLongField(env, attrs, attrs_st_atime_nsec, (jlong)buf->st_atim.tv_nsec);
     (*env)->SetLongField(env, attrs, attrs_st_mtime_nsec, (jlong)buf->st_mtim.tv_nsec);
     (*env)->SetLongField(env, attrs, attrs_st_ctime_nsec, (jlong)buf->st_ctim.tv_nsec);

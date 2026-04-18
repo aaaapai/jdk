@@ -108,3 +108,5 @@ override EXTRA_LDFLAGS :=
 # hsdis is not needed
 HSDIS_BACKEND := none
 ENABLE_HSDIS_BUNDLING := false
+
+JVM_BUILDJDK := true

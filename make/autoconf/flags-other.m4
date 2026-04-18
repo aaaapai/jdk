@@ -115,7 +115,7 @@ AC_DEFUN([FLAGS_SETUP_SVE],
 [
   AARCH64_SVE_AVAILABLE=false
   # Apple Silicon does not support SVE; use macOS as a proxy for that check.
-  if test "x$OPENJDK_TARGET_CPU" = "xaarch64" && test "x$OPENJDK_TARGET_OS" = "xlinux"; then
+  if test "x$OPENJDK_TARGET_CPU" = "xaarch64" && (test "x$OPENJDK_TARGET_OS" = "xlinux" || test "x$OPENJDK_TARGET_OS" = "xandroid"); then
     if test "x$TOOLCHAIN_TYPE" = xgcc || test "x$TOOLCHAIN_TYPE" = xclang; then
       # check the compiler and binutils support sve or not
       AC_MSG_CHECKING([if Arm SVE ACLE is supported])
@@ -184,9 +184,11 @@ AC_DEFUN([FLAGS_SETUP_ASFLAGS],
 
     # Fix linker warning.
     # Code taken from make/autoconf/flags-cflags.m4 and adapted.
+    if test "$JVM_BUILDJDK" = true; then
     JVM_BASIC_ASFLAGS="$JVM_BASIC_ASFLAGS \
         -DMAC_OS_X_VERSION_MIN_REQUIRED=$MACOSX_VERSION_MIN_NODOTS \
         -mmacosx-version-min=$MACOSX_VERSION_MIN"
+    fi
 
     if test -n "$MACOSX_VERSION_MAX"; then
         JVM_BASIC_ASFLAGS="$JVM_BASIC_ASFLAGS $OS_CFLAGS \

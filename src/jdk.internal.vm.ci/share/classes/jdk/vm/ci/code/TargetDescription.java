@@ -36,6 +36,9 @@ public class TargetDescription {
 
     public final boolean linuxOs = OperatingSystem.isLinux();
     public final boolean macOs = OperatingSystem.isMacOS();
+    public final boolean androidOs = OperatingSystem.isAndroid();
+    public final boolean iosOs = OperatingSystem.isIos();
+
 
     public final Architecture arch;
 

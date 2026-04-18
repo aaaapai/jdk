@@ -37,7 +37,7 @@ $(call FillFindCache, $(wildcard $(TOPDIR)/src/java.desktop/*/native))
 include lib/AwtLibraries.gmk
 include lib/ClientLibraries.gmk
 
-ifeq ($(call isTargetOs, aix), false)
+ifeq ($(call isTargetOs, aix android), false)
   ##############################################################################
   # Build libjsound
   ##############################################################################
@@ -71,7 +71,7 @@ ifeq ($(call isTargetOs, aix), false)
       LIBS_linux := $(ALSA_LIBS), \
       LIBS_macosx := \
           -framework AudioToolbox \
-          -framework AudioUnit \
+          -framework AVFoundation \
           -framework CoreAudio \
           -framework CoreFoundation \
           -framework CoreMIDI \

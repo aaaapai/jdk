@@ -37,6 +37,7 @@
  */
 #include <assert.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <ctype.h>
@@ -468,6 +469,13 @@ static int call_posix_spawn_file_actions_adddup2(posix_spawn_file_actions_t *fil
     return posix_spawn_file_actions_adddup2(file_actions, filedes, newfiledes);
 }
 
+#if defined(__ANDROID__) && __ANDROID_API__ < 28
+#include <android/api-level.h>
+#include <simple_posix_spawn.h>
+__attribute__((weak)) int posix_spawn(pid_t* __pid, const char* __path,
+                                          const void* __actions, const void* __attr,
+                                          char* const __argv[], char* const __env[]);
+#endif
 static pid_t
 spawnChild(JNIEnv *env, jobject process, ChildStuff *c, const char *helperpath) {
     pid_t resultPid;
@@ -579,7 +587,16 @@ spawnChild(JNIEnv *env, jobject process, ChildStuff *c, const char *helperpath) 
     c->fds[0] = c->fds[1] = c->fds[2] = -1;
     c->redirectErrorStream = false;
 
-    rval = posix_spawn(&resultPid, helperpath, &file_actions, 0, (char * const *) hlpargs, environ);
+#if defined(__ANDROID__) && __ANDROID_API__ < 28
+    int deviceApiLevel = android_get_device_api_level();
+    if (deviceApiLevel >= 28) {
+      rval = posix_spawn(&resultPid, helperpath, 0, 0, (char * const *) hlpargs, environ);
+    } else {
+      rval = simple_posix_spawn(&resultPid, helperpath, 0, 0, (char * const *) hlpargs, environ);
+    }
+#else
+    rval = posix_spawn(&resultPid, helperpath, 0, 0, (char * const *) hlpargs, environ);
+#endif
 
     if (rval != 0) {
         return -1;

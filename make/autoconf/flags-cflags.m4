@@ -83,7 +83,7 @@ AC_DEFUN([FLAGS_SETUP_DEBUG_SYMBOLS],
     ])
 
   # Debug symbols
-  if test "x$TOOLCHAIN_TYPE" = xgcc; then
+  if test "x$TOOLCHAIN_TYPE" = xgcc || test "x$OPENJDK_TARGET_OS" = xandroid; then
     if test "x$ALLOW_ABSOLUTE_PATHS_IN_OUTPUT" = "xfalse"; then
       # Check if compiler supports -fdebug-prefix-map. If so, use that to make
       # the debug symbol paths resolve to paths relative to the workspace root.
@@ -468,6 +468,12 @@ AC_DEFUN([FLAGS_SETUP_CFLAGS_HELPER],
   elif test "x$OPENJDK_TARGET_OS" = xmacosx; then
     CFLAGS_OS_DEF_JVM="-D_ALLBSD_SOURCE -D_DARWIN_C_SOURCE -D_XOPEN_SOURCE"
     CFLAGS_OS_DEF_JDK="-D_ALLBSD_SOURCE -D_DARWIN_UNLIMITED_SELECT"
+  elif test "x$OPENJDK_TARGET_OS" = xandroid; then
+    CFLAGS_OS_DEF_JVM="-DLINUX -D_ALLBSD_SOURCE -D_FILE_OFFSET_BITS=64 -DANDROID -DS_IFIFO=0010000 -DS_IFBLK=0060000 -DS_IFCHR=0020000 -DS_IFLNK=0120000 -DS_IFDIR=0040000 -DS_IFREG=0100000 -DS_IFMT=00170000 -DPOSIX_FADV_SEQUENTIAL=2 -DPOSIX_FADV_NOREUSE=5 -DPOSIX_FADV_WILLNEED=3"
+    CFLAGS_OS_DEF_JDK="-DLINUX -D__USE_BSD -D_FILE_OFFSET_BITS=64 -DANDROID -DS_IFIFO=0010000 -DS_IFBLK=0060000 -DS_IFCHR=0020000 -DS_IFLNK=0120000 -DS_IFDIR=0040000 -DS_IFREG=0100000 -DS_IFMT=00170000 -DPOSIX_FADV_SEQUENTIAL=2 -DPOSIX_FADV_NOREUSE=5 -DPOSIX_FADV_WILLNEED=3"
+  elif test "x$OPENJDK_TARGET_OS" = xios; then
+    CFLAGS_OS_DEF_JVM="-D_ALLBSD_SOURCE -D__IOS__ -D_XOPEN_SOURCE"
+    CFLAGS_OS_DEF_JDK="-D_ALLBSD_SOURCE -D__IOS__"
   elif test "x$OPENJDK_TARGET_OS" = xaix; then
     CFLAGS_OS_DEF_JVM="-DAIX -D_LARGE_FILES"
     CFLAGS_OS_DEF_JDK="-D_LARGE_FILES"
@@ -564,7 +570,7 @@ AC_DEFUN([FLAGS_SETUP_CFLAGS_HELPER],
     # works for all platforms.
     TOOLCHAIN_CFLAGS_JVM="$TOOLCHAIN_CFLAGS_JVM -mno-omit-leaf-frame-pointer -mstack-alignment=16"
 
-    if test "x$OPENJDK_TARGET_OS" = xlinux; then
+    if test "x$OPENJDK_TARGET_OS" = xlinux || test "x$OPENJDK_TARGET_OS" = xandroid; then
       if test "x$DEBUG_LEVEL" = xrelease; then
         # Clang does not inline as much as GCC does for functions with "inline" keyword by default.
         # This causes noticeable slowdown in pause time for G1, and possibly in other areas.
@@ -630,7 +636,7 @@ AC_DEFUN([FLAGS_SETUP_CFLAGS_HELPER],
   # Set some additional per-OS defines.
 
   # Additional macosx handling
-  if test "x$OPENJDK_TARGET_OS" = xmacosx; then
+  if test "x$OPENJDK_TARGET_OS" = xmacosx && "$JVM_BUILDJDK" = true; then
     OS_CFLAGS="-DMAC_OS_X_VERSION_MIN_REQUIRED=$MACOSX_VERSION_MIN_NODOTS \
         -mmacosx-version-min=$MACOSX_VERSION_MIN"
 
@@ -776,6 +782,13 @@ AC_DEFUN([FLAGS_SETUP_CFLAGS_CPU_DEP],
     fi
     if test "x$OPENJDK_TARGET_OS" = xaix; then
       $1_CFLAGS_CPU="-mcpu=pwr8"
+    fi
+
+    if test "x$FLAGS_CPU" = xarm; then
+      # For whatever reason arm build with clang fails with:
+      #   ad_arm.cpp:19849:4: error: "ARM must be defined"
+      # Fix by defining arm here as well.
+      $1_CFLAGS_CPU_JVM="-DARM"
     fi
 
   elif test "x$TOOLCHAIN_TYPE" = xmicrosoft; then

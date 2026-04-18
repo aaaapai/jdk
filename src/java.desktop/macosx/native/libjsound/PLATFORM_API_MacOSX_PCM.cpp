@@ -41,6 +41,10 @@
 
 #include "PLATFORM_API_MacOSX_Utils.h"
 
+#if __IOS__
+void DAUDIO_RequestRecordPermission();
+#endif
+
 extern "C" {
 #include "Utilities.h"
 #include "DirectAudio.h"
@@ -71,6 +75,9 @@ static inline void PrintStreamDesc(const AudioStreamBasicDescription *inDesc) { 
 static DeviceList deviceCache;
 
 INT32 DAUDIO_GetDirectAudioDeviceCount() {
+#ifdef __IOS__
+    DAUDIO_RequestRecordPermission();
+#endif
     deviceCache.Refresh();
     int count = deviceCache.GetCount();
     if (count > 0) {
@@ -634,7 +641,11 @@ static AudioUnit CreateOutputUnit(AudioDeviceID deviceID, int isSource)
 
     AudioComponentDescription desc;
     desc.componentType         = kAudioUnitType_Output;
+#ifdef __IOS__
     desc.componentSubType      = (deviceID == 0 && isSource) ? kAudioUnitSubType_DefaultOutput : kAudioUnitSubType_HALOutput;
+#else
+    desc.componentSubType      = kAudioUnitSubType_RemoteIO;
+#endif
     desc.componentManufacturer = kAudioUnitManufacturer_Apple;
     desc.componentFlags        = 0;
     desc.componentFlagsMask    = 0;
