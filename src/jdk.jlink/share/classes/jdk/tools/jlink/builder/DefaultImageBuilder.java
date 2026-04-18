@@ -209,9 +209,17 @@ public final class DefaultImageBuilder implements ImageBuilder {
 
                 // jspawnhelper is in lib or lib/<arch>
                 Path lib = root.resolve(LIB_DIRNAME);
+                String jspawnhelperName;
+                if (isAndroid()) {
+                   jspawnhelperName = "libjspawnhelper.so";
+                } else {
+                   jspawnhelperName = "jspawnhelper";
+                }
+                final String finalJspawnhelperName = jspawnhelperName;
+
                 if (Files.isDirectory(lib)) {
                     forEachPath(lib,
-                        (path, attrs) -> path.getFileName().toString().equals("jspawnhelper")
+                        (path, attrs) -> path.getFileName().toString().equals(finalJspawnhelperName)
                                       || path.getFileName().toString().equals("jexec"),
                         this::setExecutable);
                 }
