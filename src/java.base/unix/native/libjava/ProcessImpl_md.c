@@ -458,6 +458,15 @@ static int eitherOneOf(int fd1, int fd2) {
     return fd2;
 }
 
+#if defined(__ANDROID__) && __ANDROID_API__ < 28
+#include <android/api-level.h>
+#include <simple_posix_spawn.h>
+__attribute__((weak)) int posix_spawn(pid_t* __pid, const char* __path,
+                                          const void* __actions, const void* __attr,
+                                        char* const __argv[], char* const __env[]);
+__attribute__((weak)) int posix_spawn_file_actions_init(posix_spawn_file_actions_t *file_actions);
+__attribute__((weak)) int posix_spawn_file_actions_adddup2(posix_spawn_file_actions_t* __actions, int __fd, int __new_fd);
+#endif
 static int call_posix_spawn_file_actions_adddup2(posix_spawn_file_actions_t *file_actions, int filedes, int newfiledes) {
 #ifdef __APPLE__
     /* MacOS is not POSIX-compliant: dup2 file actions specifying the same fd as source and destination
@@ -466,16 +475,19 @@ static int call_posix_spawn_file_actions_adddup2(posix_spawn_file_actions_t *fil
         return 0;
     }
 #endif
+
+    int deviceApiLevel = android_get_device_api_level();
+#if defined(__ANDROID__) && __ANDROID_API__ < 28
+    if (deviceApiLevel >= 28) {
+      return posix_spawn_file_actions_adddup2(file_actions, filedes, newfiledes);
+    } else {
+      return simple_posix_spawn_file_actions_adddup2(file_actions, filedes, newfiledes);
+    }
+#else
     return posix_spawn_file_actions_adddup2(file_actions, filedes, newfiledes);
+#endif
 }
 
-#if defined(__ANDROID__) && __ANDROID_API__ < 28
-#include <android/api-level.h>
-#include <simple_posix_spawn.h>
-__attribute__((weak)) int posix_spawn(pid_t* __pid, const char* __path,
-                                          const void* __actions, const void* __attr,
-                                          char* const __argv[], char* const __env[]);
-#endif
 static pid_t
 spawnChild(JNIEnv *env, jobject process, ChildStuff *c, const char *helperpath) {
     pid_t resultPid;
@@ -485,6 +497,7 @@ spawnChild(JNIEnv *env, jobject process, ChildStuff *c, const char *helperpath) 
     SpawnInfo sp;
     posix_spawn_file_actions_t file_actions;
     int child_stdin, child_stdout, child_stderr, child_childenv, child_fail = -1;
+    int deviceApiLevel = android_get_device_api_level();
 
     /* NULL-terminated argv array.
      * argv[0] contains path to jspawnhelper, to follow conventions.
@@ -548,7 +561,15 @@ spawnChild(JNIEnv *env, jobject process, ChildStuff *c, const char *helperpath) 
     assert(child_childenv > STDERR_FILENO);
 
     /* Slot in dup2 file actions. */
+#if defined(__ANDROID__) && __ANDROID_API__ < 28
+    if (deviceApiLevel >= 28) {
+        posix_spawn_file_actions_init(&file_actions);
+    } else {
+        simple_posix_spawn_file_actions_init(&file_actions);
+    }
+#else
     posix_spawn_file_actions_init(&file_actions);
+#endif
 
 #ifdef __APPLE__
     /* On MacOS, posix_spawn does not behave in a POSIX-conform way in that the
@@ -588,7 +609,6 @@ spawnChild(JNIEnv *env, jobject process, ChildStuff *c, const char *helperpath) 
     c->redirectErrorStream = false;
 
 #if defined(__ANDROID__) && __ANDROID_API__ < 28
-    int deviceApiLevel = android_get_device_api_level();
     if (deviceApiLevel >= 28) {
       rval = posix_spawn(&resultPid, helperpath, 0, 0, (char * const *) hlpargs, environ);
     } else {
