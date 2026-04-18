@@ -480,8 +480,8 @@ static int call_posix_spawn_file_actions_adddup2(posix_spawn_file_actions_t *fil
     }
 #endif
 
-    int deviceApiLevel = android_get_device_api_level();
 #if defined(__ANDROID__) && __ANDROID_API__ < 28
+    int deviceApiLevel = android_get_device_api_level();
     if (deviceApiLevel >= 28) {
       return posix_spawn_file_actions_adddup2(file_actions, filedes, newfiledes);
     } else {
@@ -501,7 +501,9 @@ spawnChild(JNIEnv *env, jobject process, ChildStuff *c, const char *helperpath) 
     SpawnInfo sp;
     posix_spawn_file_actions_t file_actions;
     int child_stdin, child_stdout, child_stderr, child_childenv, child_fail = -1;
+#if defined(__ANDROID__) && __ANDROID_API__ < 28
     int deviceApiLevel = android_get_device_api_level();
+#endif
 
     /* NULL-terminated argv array.
      * argv[0] contains path to jspawnhelper, to follow conventions.
