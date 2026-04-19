@@ -53,7 +53,7 @@
 #include "childproc_errorcodes.h"
 
 #if !defined(__USE_GNU)
-int pipe2(int __fds[2], int __flags);
+extern int pipe2(int __fds[2], int __flags);
 #endif
 
 /*
