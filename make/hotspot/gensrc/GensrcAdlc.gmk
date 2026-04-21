@@ -97,7 +97,7 @@ ifeq ($(call check-jvm-feature, compiler2), true)
   ADLCFLAGS += -q -T
 
   # ADLC flags depending on target OS
-  ifeq ($(call isTargetOs, linux android), true)
+  ifeq ($(call isTargetOs, linux), true)
     ADLCFLAGS += -DLINUX=1 -D_GNU_SOURCE=1
   else ifeq ($(call isTargetOs, aix), true)
     ADLCFLAGS += -DAIX=1
