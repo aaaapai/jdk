@@ -999,139 +999,69 @@ static bool parse_tombstone(struct ps_prochandle* ph) {
 #elif defined(__riscv) && (__riscv_xlen == 64)
         // RISC-V 64-bit support
         if (strncmp(line, "      ra ", 9) == 0) {
-            // RISC-V tombstone format: "      ra 0x...  sp 0x...  gp 0x...  tp 0x..."
             unsigned long long ra, sp, gp, tp;
             sscanf(line, "      ra %llx  sp %llx  gp %llx  tp %llx",
                    &ra, &sp, &gp, &tp);
-            current_regs.regs[1] = ra;   // x1/ra
-            current_regs.regs[2] = sp;   // x2/sp
-            current_regs.regs[3] = gp;   // x3/gp
-            current_regs.regs[4] = tp;   // x4/tp
+            current_regs.ra = ra;
+            current_regs.sp = sp;
+            current_regs.gp = gp;
+            current_regs.tp = tp;
             regs_filled = 1;
         } else if (strncmp(line, "      t0 ", 9) == 0) {
             unsigned long long t0, t1, t2, fp;
             sscanf(line, "      t0 %llx  t1 %llx  t2 %llx  fp %llx",
                    &t0, &t1, &t2, &fp);
-            current_regs.regs[5] = t0;   // x5/t0
-            current_regs.regs[6] = t1;   // x6/t1
-            current_regs.regs[7] = t2;   // x7/t2
-            current_regs.regs[8] = fp;   // x8/fp
+            current_regs.t0 = t0;
+            current_regs.t1 = t1;
+            current_regs.t2 = t2;
+            current_regs.s0 = fp;   // fp = s0
         } else if (strncmp(line, "      s1 ", 9) == 0) {
             unsigned long long s1, a0, a1, a2;
             sscanf(line, "      s1 %llx  a0 %llx  a1 %llx  a2 %llx",
                    &s1, &a0, &a1, &a2);
-            current_regs.regs[9] = s1;   // x9/s1
-            current_regs.regs[10] = a0;  // x10/a0
-            current_regs.regs[11] = a1;  // x11/a1
-            current_regs.regs[12] = a2;  // x12/a2
+            current_regs.s1 = s1;
+            current_regs.a0 = a0;
+            current_regs.a1 = a1;
+            current_regs.a2 = a2;
         } else if (strncmp(line, "      a3 ", 9) == 0) {
             unsigned long long a3, a4, a5, a6;
             sscanf(line, "      a3 %llx  a4 %llx  a5 %llx  a6 %llx",
                    &a3, &a4, &a5, &a6);
-            current_regs.regs[13] = a3;  // x13/a3
-            current_regs.regs[14] = a4;  // x14/a4
-            current_regs.regs[15] = a5;  // x15/a5
-            current_regs.regs[16] = a6;  // x16/a6
+            current_regs.a3 = a3;
+            current_regs.a4 = a4;
+            current_regs.a5 = a5;
+            current_regs.a6 = a6;
         } else if (strncmp(line, "      a7 ", 9) == 0) {
             unsigned long long a7, s2, s3, s4;
             sscanf(line, "      a7 %llx  s2 %llx  s3 %llx  s4 %llx",
                    &a7, &s2, &s3, &s4);
-            current_regs.regs[17] = a7;  // x17/a7
-            current_regs.regs[18] = s2;  // x18/s2
-            current_regs.regs[19] = s3;  // x19/s3
-            current_regs.regs[20] = s4;  // x20/s4
+            current_regs.a7 = a7;
+            current_regs.s2 = s2;
+            current_regs.s3 = s3;
+            current_regs.s4 = s4;
         } else if (strncmp(line, "      s5 ", 9) == 0) {
             unsigned long long s5, s6, s7, s8;
             sscanf(line, "      s5 %llx  s6 %llx  s7 %llx  s8 %llx",
                    &s5, &s6, &s7, &s8);
-            current_regs.regs[21] = s5;  // x21/s5
-            current_regs.regs[22] = s6;  // x22/s6
-            current_regs.regs[23] = s7;  // x23/s7
-            current_regs.regs[24] = s8;  // x24/s8
+            current_regs.s5 = s5;
+            current_regs.s6 = s6;
+            current_regs.s7 = s7;
+            current_regs.s8 = s8;
         } else if (strncmp(line, "      s9 ", 9) == 0) {
             unsigned long long s9, s10, s11, t3;
             sscanf(line, "      s9 %llx  s10 %llx  s11 %llx  t3 %llx",
                    &s9, &s10, &s11, &t3);
-            current_regs.regs[25] = s9;   // x25/s9
-            current_regs.regs[26] = s10;  // x26/s10
-            current_regs.regs[27] = s11;  // x27/s11
-            current_regs.regs[28] = t3;   // x28/t3
+            current_regs.s9 = s9;
+            current_regs.s10 = s10;
+            current_regs.s11 = s11;
+            current_regs.t3 = t3;
         } else if (strncmp(line, "      t4 ", 9) == 0) {
             unsigned long long t4, t5, t6, pc;
             sscanf(line, "      t4 %llx  t5 %llx  t6 %llx  pc %llx",
                    &t4, &t5, &t6, &pc);
-            current_regs.regs[29] = t4;  // x29/t4
-            current_regs.regs[30] = t5;  // x30/t5
-            current_regs.regs[31] = t6;  // x31/t6
-            current_regs.pc = pc;
-        }
-
-#elif defined(__riscv) && (__riscv_xlen == 32)
-        // RISC-V 32-bit support
-        if (strncmp(line, "      ra ", 9) == 0) {
-            unsigned int ra, sp, gp, tp;
-            sscanf(line, "      ra %x  sp %x  gp %x  tp %x",
-                   &ra, &sp, &gp, &tp);
-            current_regs.regs[1] = ra;
-            current_regs.regs[2] = sp;
-            current_regs.regs[3] = gp;
-            current_regs.regs[4] = tp;
-            regs_filled = 1;
-        } else if (strncmp(line, "      t0 ", 9) == 0) {
-            unsigned int t0, t1, t2, fp;
-            sscanf(line, "      t0 %x  t1 %x  t2 %x  fp %x",
-                   &t0, &t1, &t2, &fp);
-            current_regs.regs[5] = t0;
-            current_regs.regs[6] = t1;
-            current_regs.regs[7] = t2;
-            current_regs.regs[8] = fp;
-        } else if (strncmp(line, "      s1 ", 9) == 0) {
-            unsigned int s1, a0, a1, a2;
-            sscanf(line, "      s1 %x  a0 %x  a1 %x  a2 %x",
-                   &s1, &a0, &a1, &a2);
-            current_regs.regs[9] = s1;
-            current_regs.regs[10] = a0;
-            current_regs.regs[11] = a1;
-            current_regs.regs[12] = a2;
-        } else if (strncmp(line, "      a3 ", 9) == 0) {
-            unsigned int a3, a4, a5, a6;
-            sscanf(line, "      a3 %x  a4 %x  a5 %x  a6 %x",
-                   &a3, &a4, &a5, &a6);
-            current_regs.regs[13] = a3;
-            current_regs.regs[14] = a4;
-            current_regs.regs[15] = a5;
-            current_regs.regs[16] = a6;
-        } else if (strncmp(line, "      a7 ", 9) == 0) {
-            unsigned int a7, s2, s3, s4;
-            sscanf(line, "      a7 %x  s2 %x  s3 %x  s4 %x",
-                   &a7, &s2, &s3, &s4);
-            current_regs.regs[17] = a7;
-            current_regs.regs[18] = s2;
-            current_regs.regs[19] = s3;
-            current_regs.regs[20] = s4;
-        } else if (strncmp(line, "      s5 ", 9) == 0) {
-            unsigned int s5, s6, s7, s8;
-            sscanf(line, "      s5 %x  s6 %x  s7 %x  s8 %x",
-                   &s5, &s6, &s7, &s8);
-            current_regs.regs[21] = s5;
-            current_regs.regs[22] = s6;
-            current_regs.regs[23] = s7;
-            current_regs.regs[24] = s8;
-        } else if (strncmp(line, "      s9 ", 9) == 0) {
-            unsigned int s9, s10, s11, t3;
-            sscanf(line, "      s9 %x  s10 %x  s11 %x  t3 %x",
-                   &s9, &s10, &s11, &t3);
-            current_regs.regs[25] = s9;
-            current_regs.regs[26] = s10;
-            current_regs.regs[27] = s11;
-            current_regs.regs[28] = t3;
-        } else if (strncmp(line, "      t4 ", 9) == 0) {
-            unsigned int t4, t5, t6, pc;
-            sscanf(line, "      t4 %x  t5 %x  t6 %x  pc %x",
-                   &t4, &t5, &t6, &pc);
-            current_regs.regs[29] = t4;
-            current_regs.regs[30] = t5;
-            current_regs.regs[31] = t6;
+            current_regs.t4 = t4;
+            current_regs.t5 = t5;
+            current_regs.t6 = t6;
             current_regs.pc = pc;
         }
 #endif // Architecture selection
