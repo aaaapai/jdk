@@ -624,72 +624,28 @@ SetExecname(char **argv)
     struct stat st;
     if (stat(original_java_path, &st) == 0) {
         char libjava_path[PATH_MAX+1];
-        char java_symlink_path[PATH_MAX+1];
-        
         JLI_Snprintf(libjava_path, PATH_MAX, "%s/libjava_bin.so", tmpdir);
-        JLI_Snprintf(java_symlink_path, PATH_MAX, "%s/java", tmpdir);
-        
-        JLI_TraceLauncher("Target libjava_bin.so: %s\n", libjava_path);
-        JLI_TraceLauncher("Target java symlink: %s\n", java_symlink_path);
-        
+    
         FILE *src = fopen(original_java_path, "rb");
-        if (src != NULL) {
+        if (src) {
             FILE *dst = fopen(libjava_path, "wb");
-            if (dst != NULL) {
+            if (dst) {
                 char buffer[8192];
                 size_t bytes;
                 while ((bytes = fread(buffer, 1, sizeof(buffer), src)) > 0) {
                     fwrite(buffer, 1, bytes, dst);
                 }
                 fclose(dst);
-                
-                chmod(libjava_path, 0755);
-                
-                JLI_TraceLauncher("Successfully copied java to: %s\n", libjava_path);
-                
-                if (symlink(libjava_path, java_symlink_path) == 0) {
-                    JLI_TraceLauncher("Created symlink: %s -> %s\n", 
-                                      java_symlink_path, libjava_path);
-                    
-                    chmod(java_symlink_path, 0755);
-                    
-                    if (access(java_symlink_path, X_OK) == 0) {
-                        JLI_TraceLauncher("Symlink is executable\n");
-                        
-                        void *handle = dlopen(libjava_path, RTLD_LOCAL | RTLD_LAZY);
-                        if (handle != NULL) {
-                            JLI_TraceLauncher("Successfully dlopen libjava_bin.so\n");
-                            dlclose(handle);
-                            
-                            exec_path = JLI_StringDup(java_symlink_path);
-                        } else {
-                            JLI_TraceLauncher("dlopen libjava_bin.so failed: %s\n", dlerror());
-                            exec_path = JLI_StringDup(java_symlink_path);
-                        }
-                    } else {
-                        JLI_TraceLauncher("Symlink not executable, using original\n");
-                        exec_path = JLI_StringDup(original_java_path);
-                    }
-                } else {
-                    JLI_TraceLauncher("Failed to create symlink: %s\n", strerror(errno));
-                    if (access(libjava_path, X_OK) == 0) {
-                        exec_path = JLI_StringDup(libjava_path);
-                    } else {
-                        exec_path = JLI_StringDup(original_java_path);
-                    }
-                }
+                chmod(libjava_path, 0777);
+            
+                exec_path = JLI_StringDup(libjava_path);
             } else {
-                JLI_TraceLauncher("Failed to open destination file: %s\n", libjava_path);
                 exec_path = JLI_StringDup(original_java_path);
             }
             fclose(src);
         } else {
-            JLI_TraceLauncher("Failed to open source file: %s\n", original_java_path);
             exec_path = JLI_StringDup(original_java_path);
         }
-    } else {
-        JLI_TraceLauncher("Original java file not found: %s\n", original_java_path);
-        exec_path = JLI_StringDup(original_java_path);
     }
     
 #elif defined(__linux__)
