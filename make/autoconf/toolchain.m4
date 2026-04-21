@@ -35,10 +35,10 @@
 m4_include([toolchain_microsoft.m4])
 
 # All valid toolchains, regardless of platform (used by help.m4)
-VALID_TOOLCHAINS_all="clang gcc microsoft"
+VALID_TOOLCHAINS_all="gcc clang microsoft"
 
 # These toolchains are valid on different platforms
-VALID_TOOLCHAINS_linux="clang gcc"
+VALID_TOOLCHAINS_linux="gcc clang"
 VALID_TOOLCHAINS_android="clang gcc"
 VALID_TOOLCHAINS_macosx="clang"
 VALID_TOOLCHAINS_aix="clang"
@@ -227,7 +227,7 @@ AC_DEFUN_ONCE([TOOLCHAIN_DETERMINE_TOOLCHAIN_TYPE],
 
     exit 0
   elif test "x$with_toolchain_type" != x; then
-  # User override; check that it is valid
+    # User override; check that it is valid
     if test "x${VALID_TOOLCHAINS/$with_toolchain_type/}" = "x${VALID_TOOLCHAINS}"; then
       AC_MSG_NOTICE([Toolchain type $with_toolchain_type is not valid on this platform.])
       AC_MSG_NOTICE([Valid toolchains: $VALID_TOOLCHAINS.])
