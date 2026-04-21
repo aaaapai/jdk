@@ -50,7 +50,7 @@ AC_DEFUN_ONCE([LIB_SETUP_STD_LIBS],
     if test "x$OPENJDK_TARGET_OS" = xlinux; then
       STATIC_STDCXX_FLAGS="-static-libstdc++ -static-libgcc"
     else
-      STATIC_STDCXX_FLAGS="-nostdlib++ -lc++_static -lc++abi"
+      STATIC_STDCXX_FLAGS="-stdlib=libc++ -static-libstdc++"
     fi
     AC_LANG_PUSH(C++)
     OLD_LIBS="$LIBS"
