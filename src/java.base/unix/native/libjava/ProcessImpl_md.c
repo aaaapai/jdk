@@ -616,12 +616,12 @@ spawnChild(JNIEnv *env, jobject process, ChildStuff *c, const char *helperpath) 
 
 #if defined(__ANDROID__) && __ANDROID_API__ < 28
     if (deviceApiLevel >= 28) {
-      rval = posix_spawn(&resultPid, helperpath, 0, 0, (char * const *) hlpargs, environ);
+      rval = posix_spawn(&resultPid, helperpath, &file_actions, 0, (char * const *) hlpargs, environ);
     } else {
-      rval = simple_posix_spawn(&resultPid, helperpath, 0, 0, (char * const *) hlpargs, environ);
+      rval = simple_posix_spawn(&resultPid, helperpath, &file_actions, 0, (char * const *) hlpargs, environ);
     }
 #else
-    rval = posix_spawn(&resultPid, helperpath, 0, 0, (char * const *) hlpargs, environ);
+    rval = posix_spawn(&resultPid, helperpath, &file_actions, 0, (char * const *) hlpargs, environ);
 #endif
 
     if (rval != 0) {
