@@ -730,6 +730,7 @@ void os::init_system_properties_values() {
 // detecting pthread library
 
 #if defined(__ANDROID__)
+#include <string>
 #include <android/api-level.h>
 #endif
 void os::Linux::libpthread_init() {
