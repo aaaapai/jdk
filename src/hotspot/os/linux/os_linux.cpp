@@ -729,6 +729,9 @@ void os::init_system_properties_values() {
 //////////////////////////////////////////////////////////////////////////////
 // detecting pthread library
 
+#if defined(__ANDROID__)
+#include <android/api-level.h>
+#endif
 void os::Linux::libpthread_init() {
   // Save glibc and pthread version strings.
 #ifndef __BIONIC__
@@ -744,8 +747,11 @@ void os::Linux::libpthread_init() {
   os::Linux::set_libc_version("musl - unknown");
   os::Linux::set_libpthread_version("musl - unknown");
 #elif defined(__BIONIC__)
-  os::Linux::set_libc_version("bionic - unknown");
-  os::Linux::set_libpthread_version("NPTL");
+  int deviceApiLevel = android_get_device_api_level();
+  static std::string libpthread_init_libcVersion = "bionic - " + std::to_string(deviceApiLevel);
+  static std::string libpthread_init_pthreadVersion = "bionic - " + std::to_string(deviceApiLevel);
+  os::Linux::set_libc_version(libpthread_init_libcVersion.c_str());
+  os::Linux::set_libpthread_version(libpthread_init_pthreadVersion.c_str());
 #else
   size_t n = confstr(_CS_GNU_LIBC_VERSION, nullptr, 0);
   assert(n > 0, "cannot retrieve glibc version");
