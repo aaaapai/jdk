@@ -77,7 +77,7 @@ AC_DEFUN_ONCE([LIB_SETUP_STD_LIBS],
       ADLC_LDFLAGS="$ADLC_LDFLAGS $STATIC_STDCXX_FLAGS"
       # Ideally, we should test stdc++ for the BUILD toolchain separately. For now
       # just use the same setting as for the TARGET toolchain.
-      OPENJDK_BUILD_JVM_LDFLAGS="$OPENJDK_BUILD_JVM_LDFLAGS"
+      OPENJDK_BUILD_JVM_LDFLAGS="$OPENJDK_BUILD_JVM_LDFLAGS $STATIC_STDCXX_FLAGS"
       AC_MSG_RESULT([static])
     fi
   fi
