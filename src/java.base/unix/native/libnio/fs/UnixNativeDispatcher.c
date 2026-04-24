@@ -1257,7 +1257,7 @@ Java_sun_nio_fs_UnixNativeDispatcher_getpwuid(JNIEnv* env, jclass this, jint uid
 
 
 #if defined(__ANDROID__) && __ANDROID_API__ <= 23
-#include <getgrgid_r_compat.h>
+#include <pwd_grp_compat.h>
 #endif
 JNIEXPORT jbyteArray JNICALL
 Java_sun_nio_fs_UnixNativeDispatcher_getgrgid(JNIEnv* env, jclass this, jint gid)
