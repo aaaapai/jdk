@@ -66,7 +66,11 @@ utfInitialize(void)
     (void)setlocale(LC_ALL, "");
 
     /* Get the codeset name */
+#if defined(__BIONIC__)
+    codeset = "UTF-8";
+#else
     codeset = (char*)nl_langinfo(CODESET);
+#endif
     if ( codeset == NULL || codeset[0] == 0 ) {
         UTF_DEBUG(("NO codeset returned by nl_langinfo(CODESET)\n"));
         return;
