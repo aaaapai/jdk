@@ -25,6 +25,8 @@
 #ifndef OS_POSIX_FORBIDDENFUNCTIONS_POSIX_HPP
 #define OS_POSIX_FORBIDDENFUNCTIONS_POSIX_HPP
 
+#if !defined(__IOS__) || !defined(__ANDROID__)
+
 #include "utilities/compilerWarnings.hpp"
 
 // For types used in the signatures.
@@ -58,4 +60,5 @@ FORBID_C_FUNCTION(char* getwd(char*), noexcept, "use os::get_current_directory")
 // BSD utility that is subtly different from realloc.
 FORBID_C_FUNCTION(void* reallocf(void*, size_t), /* not noexcept */, "use os::realloc");
 
+#endif
 #endif // OS_POSIX_FORBIDDENFUNCTIONS_POSIX_HPP

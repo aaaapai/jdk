@@ -576,17 +576,87 @@ const char*
 SetExecname(char **argv)
 {
     char* exec_path = NULL;
-#if defined(__linux__)
-    {
-        const char* self = "/proc/self/exe";
-        char buf[PATH_MAX+1];
-        int len = readlink(self, buf, PATH_MAX);
-        if (len >= 0) {
-            buf[len] = '\0';            /* readlink(2) doesn't NUL terminate */
-            exec_path = JLI_StringDup(buf);
+#if defined(__ANDROID__)
+    // Since both __ANDROID__ and __linux__ are defined, we must let the preprocessor preprocess the __ANDROID__ part first
+    char *__java_home = getenv("JAVA_HOME");
+    char *tmpdir = getenv("TMPDIR");
+    char buf[PATH_MAX+1];
+    char *p = NULL;
+
+    char original_java_path[PATH_MAX+1];
+    int found = 0;
+    
+    if ((p = JLI_StrRChr(argv[0], '/')) != 0) {
+        p++;
+        if ((JLI_StrLen(p) == 4) && JLI_StrCmp(p, "java") == 0) {
+            if (*argv[0] != '/') {
+                char *curdir = NULL;
+                getcwd(buf, PATH_MAX);
+                curdir = JLI_StringDup(buf);
+                JLI_Snprintf(original_java_path, PATH_MAX, "%s/%s", curdir, argv[0]);
+                JLI_MemFree(curdir);
+            } else {
+                JLI_Snprintf(original_java_path, PATH_MAX, "%s", argv[0]);
+            }
+            found = 1;
         }
     }
-#else /* !__linux__ */
+    
+    if (!found && __java_home != NULL) {
+        JLI_Snprintf(original_java_path, PATH_MAX, "%s/bin/java", __java_home);
+        found = 1;
+    }
+    
+    if (!found) {
+        JLI_Snprintf(original_java_path, PATH_MAX, "/data/data/%s/storage/jvm/bin/java",
+                     argv[0]);
+        found = 1;
+    }
+
+    if (tmpdir == NULL) {
+        exec_path = JLI_StringDup(buf);
+        execname = exec_path;
+        return exec_path;
+    }
+
+    JLI_TraceLauncher("Original java path: %s\n", original_java_path);
+    
+    struct stat st;
+    if (stat(original_java_path, &st) == 0) {
+        char libjava_path[PATH_MAX+1];
+        JLI_Snprintf(libjava_path, PATH_MAX, "%s/libjava_bin.so", tmpdir);
+    
+        FILE *src = fopen(original_java_path, "rb");
+        if (src) {
+            FILE *dst = fopen(libjava_path, "wb");
+            if (dst) {
+                char buffer[8192];
+                size_t bytes;
+                while ((bytes = fread(buffer, 1, sizeof(buffer), src)) > 0) {
+                    fwrite(buffer, 1, bytes, dst);
+                }
+                fclose(dst);
+                chmod(libjava_path, 0777);
+            
+                exec_path = JLI_StringDup(libjava_path);
+            } else {
+                exec_path = JLI_StringDup(original_java_path);
+            }
+            fclose(src);
+        } else {
+            exec_path = JLI_StringDup(original_java_path);
+        }
+    }
+    
+#elif defined(__linux__)
+    const char* self = "/proc/self/exe";
+    char buf[PATH_MAX+1];
+    int len = readlink(self, buf, PATH_MAX);
+    if (len >= 0) {
+        buf[len] = '\0';
+        exec_path = JLI_StringDup(buf);
+    }
+#else
     {
         /* Not implemented */
     }

@@ -601,8 +601,8 @@ LIBCXX := @LIBCXX@
 
 # BUILD_CC/BUILD_LD is a compiler/linker that generates code that is runnable on the
 # build platform.
-BUILD_CC := @BUILD_ICECC@ @BUILD_CC@
-BUILD_CXX := @BUILD_ICECC@ @BUILD_CXX@
+BUILD_CC := @CCACHE@ @BUILD_ICECC@ @BUILD_CC@
+BUILD_CXX := @CCACHE@ @BUILD_ICECC@ @BUILD_CXX@
 BUILD_LD := @BUILD_LD@
 BUILD_LDCXX := @BUILD_LDCXX@
 BUILD_AS := @BUILD_AS@

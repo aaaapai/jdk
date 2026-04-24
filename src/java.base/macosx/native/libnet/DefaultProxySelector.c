@@ -37,6 +37,9 @@
 
 #include "sun_net_spi_DefaultProxySelector.h"
 
+#ifdef __IOS__
+#include <CFNetwork/CFNetwork.h>
+#endif
 
 /**
  * For more information on how to use the APIs in "CFProxySupport.h" see:

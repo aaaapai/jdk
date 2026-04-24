@@ -566,6 +566,7 @@ void os::Posix::print_load_average(outputStream* st) {
 // unfortunately it does not work on macOS and Linux because the utx chain has no entry
 // for reboot at least on my test machines
 void os::Posix::print_uptime_info(outputStream* st) {
+#ifndef __ANDROID__
   int bootsec = -1;
   time_t currsec = time(nullptr);
   struct utmpx* ent;
@@ -580,6 +581,7 @@ void os::Posix::print_uptime_info(outputStream* st) {
   if (bootsec != -1) {
     os::print_dhm(st, "OS uptime:", currsec-bootsec);
   }
+#endif
 }
 
 static void print_rlimit(outputStream* st, const char* msg,
@@ -1114,6 +1116,36 @@ bool os::same_files(const char* file1, const char* file2) {
 
 static char saved_jvm_path[MAXPATHLEN] = {0};
 
+#ifdef __ANDROID__
+static bool read_so_path_from_maps(const char* so_name, char* buf, int buflen);
+static bool read_so_path_from_maps(const char* so_name, char* buf, int buflen) {
+  FILE *fp = fopen("/proc/self/maps", "r");
+  assert(fp, "Failed to open /proc/self/maps");
+  if (!fp) {
+    return false;
+  }
+
+  char maps_buffer[2048];
+  while (fgets(maps_buffer, 2048, fp) != NULL) {
+    if (strstr(maps_buffer, so_name) == NULL) {
+      continue;
+    }
+
+    char *so_path = strchr(maps_buffer, '/');
+    so_path[strlen(so_path) - 1] = '\0'; // Cut trailing \n
+    jio_snprintf(buf, buflen, "%s", so_path);
+    fclose(fp);
+    return true;
+  }
+
+  fclose(fp);
+  return false;
+}
+// Loads .dll/.so and
+// in case of error it checks if .dll/.so was built for the
+// same architecture as Hotspot is running on
+#endif
+
 // Find the full path to the current module, libjvm.so
 void os::jvm_path(char *buf, jint buflen) {
   // Error checking.
@@ -1149,6 +1181,21 @@ void os::jvm_path(char *buf, jint buflen) {
   }
   fname = dli_fname;
 #endif // AIX
+
+#ifdef __ANDROID__
+  if (fname[0] == '\0') {
+    return;
+  }
+
+  if (strchr(fname, '/') == NULL) {
+    if (read_so_path_from_maps("libjvm.so", buf, buflen)) {
+      strncpy(saved_jvm_path, buf, MAXPATHLEN);
+      saved_jvm_path[MAXPATHLEN - 1] = '\0';
+      return;
+    }
+  }
+#endif
+
   char* rp = nullptr;
   if (fname[0] != '\0') {
     rp = os::realpath(fname, buf, buflen);
@@ -1424,7 +1471,7 @@ static bool _use_clock_monotonic_condattr = false;
 // Determine what POSIX API's are present and do appropriate
 // configuration.
 void os::Posix::init(void) {
-#if defined(_ALLBSD_SOURCE)
+#if defined(_ALLBSD_SOURCE) && !defined(__ANDROID__) && !defined(__linux__)
   clock_tics_per_sec = CLK_TCK;
 #else
   clock_tics_per_sec = checked_cast<int>(sysconf(_SC_CLK_TCK));
@@ -2148,6 +2195,15 @@ char** os::get_environ() { return environ; }
 //         doesn't block SIGINT et al.
 //        -this function is unsafe to use in non-error situations, mainly
 //         because the child process will inherit all parent descriptors.
+#if defined(__ANDROID__) && __ANDROID_API__ < 28
+#include <android/api-level.h>
+#include <simple_posix_spawn.h>
+extern "C" {
+    __attribute__((weak)) int posix_spawn(pid_t* __pid, const char* __path,
+                                          const void* __actions, const void* __attr,
+                                          char* const __argv[], char* const __env[]);
+}
+#endif
 int os::fork_and_exec(const char* cmd) {
   const char* argv[4] = {"sh", "-c", cmd, nullptr};
   pid_t pid = -1;
@@ -2155,7 +2211,18 @@ int os::fork_and_exec(const char* cmd) {
   // Note: cast is needed because posix_spawn() requires - for compatibility with ancient
   // C-code - a non-const argv/envp pointer array. But it is fine to hand in literal
   // strings and just cast the constness away. See also ProcessImpl_md.c.
+#if defined(__ANDROID__) && __ANDROID_API__ < 28
+  int rc = 0;
+  int deviceApiLevel = android_get_device_api_level();
+  if (deviceApiLevel >= 28) {
+    rc = ::posix_spawn(&pid, "/bin/sh", nullptr, nullptr, (char**) argv, env);
+  } else {
+    rc = ::simple_posix_spawn(&pid, "/bin/sh", nullptr, nullptr, (char**) argv, env);
+  }
+#else
   int rc = ::posix_spawn(&pid, "/bin/sh", nullptr, nullptr, (char**) argv, env);
+#endif
+
   if (rc == 0) {
     int status;
     // Wait for the child process to exit.  This returns immediately if

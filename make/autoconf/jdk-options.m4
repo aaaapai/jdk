@@ -207,8 +207,10 @@ AC_DEFUN_ONCE([JDKOPT_SETUP_JDK_OPTIONS],
   # The only platform having this problem at the moment is Linux on aarch64, which may encounter
   # three different page sizes: 4K, 64K, and if run on Mac m1 hardware, 16K.
   COMPATIBLE_CDS_ALIGNMENT_DEFAULT=false
-  if test "x$OPENJDK_TARGET_OS" = "xlinux" && test "x$OPENJDK_TARGET_CPU" = "xaarch64"; then
-    COMPATIBLE_CDS_ALIGNMENT_DEFAULT=auto
+  if test "x$OPENJDK_TARGET_OS" = "xlinux" || test "x$OPENJDK_TARGET_OS" = "xandroid"; then
+    if test "x$OPENJDK_TARGET_CPU" = "xaarch64"; then
+      COMPATIBLE_CDS_ALIGNMENT_DEFAULT=auto
+    fi
   fi
 
   # Compress jars

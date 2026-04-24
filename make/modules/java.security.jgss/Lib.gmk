@@ -75,7 +75,7 @@ ifneq ($(BUILD_CRYPTO), false)
     TARGETS += $(BUILD_LIBW2K_LSA_AUTH)
   endif
 
-  ifeq ($(call isTargetOs, macosx), true)
+  ifeq (false, true)
     ############################################################################
     ## Build libosxkrb5
     ############################################################################

@@ -45,6 +45,33 @@
 #define HWCAP_PACA (1 << 30)
 #endif
 
+#ifdef __ANDROID__
+#include <stdio.h>
+#include <ctype.h>
+#include <sys/user.h>
+#endif
+#if defined(__ANDROID__) && !defined(PRSTATUS_T_DEFINED)
+#define PRSTATUS_T_DEFINED 1
+typedef struct prstatus {
+    struct elf_siginfo pr_info;
+    short int pr_cursig;
+    unsigned int pr_sigpend;
+    unsigned int pr_sighold;
+    pid_t pr_pid;
+    pid_t pr_ppid;
+    pid_t pr_pgrp;
+    pid_t pr_sid;
+    struct timeval pr_utime;
+    struct timeval pr_stime;
+    struct timeval pr_cutime;
+    struct timeval pr_cstime;
+    elf_gregset_t pr_reg;
+    int pr_fpvalid;
+} prstatus_t;
+
+#endif // __ANDROID__ && !PRSTATUS_T_DEFINED
+
+
 // This file has the libproc implementation to read core files.
 // For live processes, refer to ps_proc.c. Portions of this is adapted
 // /modelled after Solaris libproc.so (in particular Pcore.c)
@@ -196,8 +223,8 @@ static ps_prochandle_ops core_ops = {
 static bool core_handle_prstatus(struct ps_prochandle* ph, const char* buf, size_t nbytes) {
    // we have to read prstatus_t from buf
    // assert(nbytes == sizeof(prstaus_t), "size mismatch on prstatus_t");
-   prstatus_t* prstat = (prstatus_t*) buf;
    thread_info* newthr;
+   prstatus_t* prstat = (prstatus_t*) buf;
    print_debug("got integer regset for lwp %d\n", prstat->pr_pid);
    if((newthr = add_thread_info(ph, prstat->pr_pid)) == NULL) {
       print_error("failed to add thread info\n");
@@ -824,6 +851,266 @@ static bool read_shared_lib_info(struct ps_prochandle* ph) {
   return true;
 }
 
+#ifdef __ANDROID__
+static bool parse_tombstone(struct ps_prochandle* ph) {
+    FILE* fp = fdopen(dup(ph->core->core_fd), "r");
+    if (!fp) {
+        print_error("parse_tombstone: failed to fdopen core file\n");
+        return false;
+    }
+
+    char line[1024];
+    int current_tid = 0;
+    struct user_regs_struct current_regs;
+    int regs_filled = 0;
+
+    memset(&current_regs, 0, sizeof(current_regs));
+
+    while (fgets(line, sizeof(line), fp)) {
+        size_t len = strlen(line);
+        if (len > 0 && line[len-1] == '\n') line[len-1] = '\0';
+
+        if (strncmp(line, "---", 3) == 0) {
+            if (current_tid != 0 && regs_filled) {
+                thread_info* thr = add_thread_info(ph, current_tid);
+                if (thr) {
+                    memcpy(&thr->regs, &current_regs, sizeof(current_regs));
+                }
+            }
+            current_tid = 0;
+            regs_filled = 0;
+            continue;
+        }
+
+        if (sscanf(line, "pid: %*d, tid: %d", &current_tid) == 1) {
+            continue;
+        }
+
+#if defined(__aarch64__)
+        if (strncmp(line, "      x0 ", 9) == 0) {
+            sscanf(line, "      x0 %llx  x1 %llx  x2 %llx  x3 %llx",
+                   &current_regs.regs[0], &current_regs.regs[1],
+                   &current_regs.regs[2], &current_regs.regs[3]);
+            regs_filled = 1;
+        } else if (strncmp(line, "      x4 ", 9) == 0) {
+            sscanf(line, "      x4 %llx  x5 %llx  x6 %llx  x7 %llx",
+                   &current_regs.regs[4], &current_regs.regs[5],
+                   &current_regs.regs[6], &current_regs.regs[7]);
+        } else if (strncmp(line, "      x8 ", 9) == 0) {
+            sscanf(line, "      x8 %llx  x9 %llx  x10 %llx  x11 %llx",
+                   &current_regs.regs[8], &current_regs.regs[9],
+                   &current_regs.regs[10], &current_regs.regs[11]);
+        } else if (strncmp(line, "      x12 ", 10) == 0) {
+            sscanf(line, "      x12 %llx  x13 %llx  x14 %llx  x15 %llx",
+                   &current_regs.regs[12], &current_regs.regs[13],
+                   &current_regs.regs[14], &current_regs.regs[15]);
+        } else if (strncmp(line, "      x16 ", 10) == 0) {
+            sscanf(line, "      x16 %llx  x17 %llx  x18 %llx  x19 %llx",
+                   &current_regs.regs[16], &current_regs.regs[17],
+                   &current_regs.regs[18], &current_regs.regs[19]);
+        } else if (strncmp(line, "      x20 ", 10) == 0) {
+            sscanf(line, "      x20 %llx  x21 %llx  x22 %llx  x23 %llx",
+                   &current_regs.regs[20], &current_regs.regs[21],
+                   &current_regs.regs[22], &current_regs.regs[23]);
+        } else if (strncmp(line, "      x24 ", 10) == 0) {
+            sscanf(line, "      x24 %llx  x25 %llx  x26 %llx  x27 %llx",
+                   &current_regs.regs[24], &current_regs.regs[25],
+                   &current_regs.regs[26], &current_regs.regs[27]);
+        } else if (strncmp(line, "      x28 ", 10) == 0) {
+            sscanf(line, "      x28 %llx  x29 %llx  x30 %llx  sp %llx",
+                   &current_regs.regs[28], &current_regs.regs[29],
+                   &current_regs.regs[30], &current_regs.sp);
+        } else if (strncmp(line, "      pc ", 9) == 0) {
+            sscanf(line, "      pc %llx", &current_regs.pc);
+        } else if (strncmp(line, "      pstate ", 13) == 0) {
+            sscanf(line, "      pstate %llx", &current_regs.pstate);
+        }
+
+#elif defined(__arm__)
+        if (strncmp(line, "      r0 ", 9) == 0) {
+            sscanf(line, "      r0 %lx  r1 %lx  r2 %lx  r3 %lx",
+                   &current_regs.uregs[0], &current_regs.uregs[1],
+                   &current_regs.uregs[2], &current_regs.uregs[3]);
+            regs_filled = 1;
+        } else if (strncmp(line, "      r4 ", 9) == 0) {
+            sscanf(line, "      r4 %lx  r5 %lx  r6 %lx  r7 %lx",
+                   &current_regs.uregs[4], &current_regs.uregs[5],
+                   &current_regs.uregs[6], &current_regs.uregs[7]);
+        } else if (strncmp(line, "      r8 ", 9) == 0) {
+            sscanf(line, "      r8 %lx  r9 %lx  r10 %lx  r11 %lx",
+                   &current_regs.uregs[8], &current_regs.uregs[9],
+                   &current_regs.uregs[10], &current_regs.uregs[11]);
+        } else if (strncmp(line, "      ip ", 9) == 0) {
+            unsigned long ip, sp, lr, pc;
+            sscanf(line, "      ip %lx  sp %lx  lr %lx  pc %lx",
+                   &ip, &sp, &lr, &pc);
+            current_regs.uregs[12] = ip;  // IP (r12)
+            current_regs.uregs[13] = sp;  // SP (r13)
+            current_regs.uregs[14] = lr;  // LR (r14)
+            current_regs.uregs[15] = pc;  // PC (r15)
+        } else if (strncmp(line, "      cpsr ", 11) == 0) {
+            sscanf(line, "      cpsr %lx", &current_regs.uregs[16]);
+        }
+
+#elif defined(__x86_64__)
+        if (strncmp(line, "    rax ", 8) == 0) {
+            sscanf(line, "    rax %llx  rbx %llx  rcx %llx  rdx %llx",
+                   &current_regs.rax, &current_regs.rbx,
+                   &current_regs.rcx, &current_regs.rdx);
+            regs_filled = 1;
+        } else if (strncmp(line, "    rsi ", 8) == 0) {
+            sscanf(line, "    rsi %llx  rdi %llx  rbp %llx  rsp %llx",
+                   &current_regs.rsi, &current_regs.rdi,
+                   &current_regs.rbp, &current_regs.rsp);
+        } else if (strncmp(line, "     r8 ", 8) == 0) {
+            sscanf(line, "     r8 %llx   r9 %llx  r10 %llx  r11 %llx",
+                   &current_regs.r8, &current_regs.r9,
+                   &current_regs.r10, &current_regs.r11);
+        } else if (strncmp(line, "    r12 ", 8) == 0) {
+            sscanf(line, "    r12 %llx  r13 %llx  r14 %llx  r15 %llx",
+                   &current_regs.r12, &current_regs.r13,
+                   &current_regs.r14, &current_regs.r15);
+        } else if (strncmp(line, "    rip ", 8) == 0) {
+            sscanf(line, "    rip %llx  eflags %llx",
+                   &current_regs.rip, &current_regs.eflags);
+        } else if (strncmp(line, "    cs ", 7) == 0) {
+            sscanf(line, "    cs %llx  ss %llx  ds %llx  es %llx  fs %llx  gs %llx",
+                   &current_regs.cs, &current_regs.ss,
+                   &current_regs.ds, &current_regs.es,
+                   &current_regs.fs, &current_regs.gs);
+        }
+
+#elif defined(__i386__)
+        if (strncmp(line, "    eax ", 8) == 0) {
+            sscanf(line, "    eax %lx  ebx %lx  ecx %lx  edx %lx",
+                   &current_regs.eax, &current_regs.ebx,
+                   &current_regs.ecx, &current_regs.edx);
+            regs_filled = 1;
+        } else if (strncmp(line, "    esi ", 8) == 0) {
+            sscanf(line, "    esi %lx  edi %lx  ebp %lx  esp %lx",
+                   &current_regs.esi, &current_regs.edi,
+                   &current_regs.ebp, &current_regs.esp);
+        } else if (strncmp(line, "    eip ", 8) == 0) {
+            sscanf(line, "    eip %lx  eflags %lx  xcs %lx  xss %lx",
+                   &current_regs.eip, &current_regs.eflags,
+                   &current_regs.xcs, &current_regs.xss);
+        }
+
+#elif defined(__riscv) && (__riscv_xlen == 64)
+        // RISC-V 64-bit support
+        if (strncmp(line, "      ra ", 9) == 0) {
+            unsigned long long ra, sp, gp, tp;
+            sscanf(line, "      ra %llx  sp %llx  gp %llx  tp %llx",
+                   &ra, &sp, &gp, &tp);
+            current_regs.ra = ra;
+            current_regs.sp = sp;
+            current_regs.gp = gp;
+            current_regs.tp = tp;
+            regs_filled = 1;
+        } else if (strncmp(line, "      t0 ", 9) == 0) {
+            unsigned long long t0, t1, t2, fp;
+            sscanf(line, "      t0 %llx  t1 %llx  t2 %llx  fp %llx",
+                   &t0, &t1, &t2, &fp);
+            current_regs.t0 = t0;
+            current_regs.t1 = t1;
+            current_regs.t2 = t2;
+            current_regs.s0 = fp;   // fp = s0
+        } else if (strncmp(line, "      s1 ", 9) == 0) {
+            unsigned long long s1, a0, a1, a2;
+            sscanf(line, "      s1 %llx  a0 %llx  a1 %llx  a2 %llx",
+                   &s1, &a0, &a1, &a2);
+            current_regs.s1 = s1;
+            current_regs.a0 = a0;
+            current_regs.a1 = a1;
+            current_regs.a2 = a2;
+        } else if (strncmp(line, "      a3 ", 9) == 0) {
+            unsigned long long a3, a4, a5, a6;
+            sscanf(line, "      a3 %llx  a4 %llx  a5 %llx  a6 %llx",
+                   &a3, &a4, &a5, &a6);
+            current_regs.a3 = a3;
+            current_regs.a4 = a4;
+            current_regs.a5 = a5;
+            current_regs.a6 = a6;
+        } else if (strncmp(line, "      a7 ", 9) == 0) {
+            unsigned long long a7, s2, s3, s4;
+            sscanf(line, "      a7 %llx  s2 %llx  s3 %llx  s4 %llx",
+                   &a7, &s2, &s3, &s4);
+            current_regs.a7 = a7;
+            current_regs.s2 = s2;
+            current_regs.s3 = s3;
+            current_regs.s4 = s4;
+        } else if (strncmp(line, "      s5 ", 9) == 0) {
+            unsigned long long s5, s6, s7, s8;
+            sscanf(line, "      s5 %llx  s6 %llx  s7 %llx  s8 %llx",
+                   &s5, &s6, &s7, &s8);
+            current_regs.s5 = s5;
+            current_regs.s6 = s6;
+            current_regs.s7 = s7;
+            current_regs.s8 = s8;
+        } else if (strncmp(line, "      s9 ", 9) == 0) {
+            unsigned long long s9, s10, s11, t3;
+            sscanf(line, "      s9 %llx  s10 %llx  s11 %llx  t3 %llx",
+                   &s9, &s10, &s11, &t3);
+            current_regs.s9 = s9;
+            current_regs.s10 = s10;
+            current_regs.s11 = s11;
+            current_regs.t3 = t3;
+        } else if (strncmp(line, "      t4 ", 9) == 0) {
+            unsigned long long t4, t5, t6, pc;
+            sscanf(line, "      t4 %llx  t5 %llx  t6 %llx  pc %llx",
+                   &t4, &t5, &t6, &pc);
+            current_regs.t4 = t4;
+            current_regs.t5 = t5;
+            current_regs.t6 = t6;
+            current_regs.pc = pc;
+        }
+#endif // Architecture selection
+    }
+
+    // Save the last thread info
+    if (current_tid != 0 && regs_filled) {
+        thread_info* thr = add_thread_info(ph, current_tid);
+        if (thr) {
+            memcpy(&thr->regs, &current_regs, sizeof(current_regs));
+        }
+    }
+
+    fclose(fp);
+
+    // For tombstone files, we don't have memory mappings from PT_LOAD segments
+    // So we need to create a minimal mapping structure to make the debugger work
+    ph->core->num_maps = 0;
+    ph->core->maps = NULL;
+    ph->core->map_array = NULL;
+
+    // Add a dummy mapping for the whole address space to allow memory reads
+    // This is a simplification - in reality you'd need to parse /proc/pid/maps
+    // from the tombstone or have the mappings embedded in the tombstone file
+    if (ph->threads != NULL) {
+        // Create a single mapping covering the entire address space
+        // This is not accurate but allows basic register and stack inspection
+        map_info* map = (map_info*)calloc(1, sizeof(map_info));
+        if (map) {
+            map->vaddr = 0x1000;  // Skip NULL page
+            map->memsz = 0x7fffffffffff;  // Large enough to cover typical address space
+            map->fd = ph->core->core_fd;
+            map->offset = 0;
+            map->flags = PF_R | PF_W | PF_X;
+            
+            // Add to map list
+            map->next = ph->core->maps;
+            ph->core->maps = map;
+            ph->core->num_maps++;
+            
+            // Create map array for binary search
+            sort_map_array(ph);
+        }
+    }
+
+    return (ph->threads != NULL);
+}
+#endif // __ANDROID__
+
 // the one and only one exposed stuff from this file
 JNIEXPORT struct ps_prochandle* JNICALL
 Pgrab_core(const char* exec_file, const char* core_file) {
@@ -853,6 +1140,14 @@ Pgrab_core(const char* exec_file, const char* core_file) {
     print_error("can't open core file: %s\n", strerror(errno));
     goto err;
   }
+  
+#ifdef __ANDROID__
+  if (!parse_tombstone(ph)) {
+    print_error("failed to parse tombstone file (or not a tombstone)\n");
+    goto err;
+  }
+  return ph;
+#endif
 
   // read core file ELF header
   if (read_elf_header(ph->core->core_fd, &core_ehdr) != true || core_ehdr.e_type != ET_CORE) {

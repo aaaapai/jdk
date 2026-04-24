@@ -39,6 +39,7 @@ VALID_TOOLCHAINS_all="gcc clang microsoft"
 
 # These toolchains are valid on different platforms
 VALID_TOOLCHAINS_linux="gcc clang"
+VALID_TOOLCHAINS_android="clang gcc"
 VALID_TOOLCHAINS_macosx="clang"
 VALID_TOOLCHAINS_aix="clang"
 VALID_TOOLCHAINS_windows="microsoft"
@@ -879,12 +880,14 @@ AC_DEFUN_ONCE([TOOLCHAIN_SETUP_BUILD_COMPILERS],
 
     PATH="$OLDPATH"
 
-    TOOLCHAIN_EXTRACT_COMPILER_VERSION(BUILD_CC, [BuildC])
-    TOOLCHAIN_EXTRACT_COMPILER_VERSION(BUILD_CXX, [BuildC++])
-    TOOLCHAIN_PREPARE_FOR_VERSION_COMPARISONS([BUILD_], [OPENJDK_BUILD_], [build ])
-    TOOLCHAIN_EXTRACT_LD_VERSION(BUILD_LD, [build linker])
-    TOOLCHAIN_PREPARE_FOR_LD_VERSION_COMPARISONS([BUILD_], [OPENJDK_BUILD_])
-  else
+    if test "x$OPENJDK_TARGET_OS" != "xandroid"; then
+      TOOLCHAIN_EXTRACT_COMPILER_VERSION(BUILD_CC, [BuildC])
+      TOOLCHAIN_EXTRACT_COMPILER_VERSION(BUILD_CXX, [BuildC++])
+      TOOLCHAIN_PREPARE_FOR_VERSION_COMPARISONS([BUILD_], [OPENJDK_BUILD_], [build ])
+      TOOLCHAIN_EXTRACT_LD_VERSION(BUILD_LD, [build linker])
+      TOOLCHAIN_PREPARE_FOR_LD_VERSION_COMPARISONS([BUILD_], [OPENJDK_BUILD_])
+    fi
+    else
     # If we are not cross compiling, use the normal target compilers for
     # building the build platform executables.
     BUILD_CC="$CC"

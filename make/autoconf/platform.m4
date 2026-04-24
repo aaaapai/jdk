@@ -198,6 +198,14 @@ AC_DEFUN([PLATFORM_EXTRACT_VARS_FROM_CPU],
 AC_DEFUN([PLATFORM_EXTRACT_VARS_FROM_OS],
 [
   case "$1" in
+    *android*)
+      VAR_OS=android
+      VAR_OS_TYPE=unix
+      ;;
+    *ios*)
+      VAR_OS=ios
+      VAR_OS_TYPE=unix
+      ;;
     *linux*)
       VAR_OS=linux
       VAR_OS_TYPE=unix
@@ -531,9 +539,19 @@ AC_DEFUN([PLATFORM_SETUP_LEGACY_VARS_HELPER],
   # Convert openjdk platform names to hotspot names
 
   HOTSPOT_$1_OS=${OPENJDK_$1_OS}
+
+  if test "x$OPENJDK_$1_OS" = xios; then
+    HOTSPOT_$1_OS=bsd
+  fi
+
+  if test "x$OPENJDK_$1_OS" = xandroid; then
+    HOTSPOT_$1_OS=linux
+  fi
+
   if test "x$OPENJDK_$1_OS" = xmacosx; then
     HOTSPOT_$1_OS=bsd
   fi
+
   AC_SUBST(HOTSPOT_$1_OS)
 
   HOTSPOT_$1_OS_TYPE=${OPENJDK_$1_OS_TYPE}
@@ -623,6 +641,11 @@ AC_DEFUN([PLATFORM_SET_RELEASE_FILE_OS_VALUES],
   fi
   RELEASE_FILE_OS_ARCH=${OPENJDK_TARGET_CPU}
   RELEASE_FILE_LIBC=${OPENJDK_TARGET_LIBC}
+
+  if test "x$OPENJDK_TARGET_OS" = "xandroid"; then
+    RELEASE_FILE_OS_NAME="Android"
+    RELEASE_FILE_LIBC="Bionic"
+  fi
 
   AC_SUBST(RELEASE_FILE_OS_NAME)
   AC_SUBST(RELEASE_FILE_OS_ARCH)

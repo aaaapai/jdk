@@ -246,6 +246,8 @@ public final class Services {
     private static String realOS() {
         OperatingSystem os = OperatingSystem.current();
         switch (os) {
+            case ANDROID: return "Android";
+            case IOS: return "iOS";
             case LINUX: return "Linux";
             case MACOS: return "Mac OS X";
             case AIX: return "AIX";
