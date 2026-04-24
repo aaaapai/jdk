@@ -1215,6 +1215,14 @@ Java_sun_nio_fs_UnixNativeDispatcher_mknod0(JNIEnv* env, jclass this,
     }
 }
 
+#if defined(__ANDROID__) && __ANDROID_API__ <= 23
+#include <android/api-level.h>
+#include <pwd_grp_compat.h>
+__attribute__((weak)) int getgrgid_r(gid_t gid, struct group* grp, char* buf, size_t buflen, struct group** result);
+__attribute__((weak)) int getgrnam_r(const char* name, struct group* grp, char* buf, size_t buflen, struct group** result);
+__attribute__((weak)) int getpwnam_r(const char* name, struct passwd* pwd, char* buf, size_t buflen, struct passwd** result);
+__attribute__((weak)) int getpwuid_r(uid_t uid, struct passwd* pwd, char* buf, size_t buflen, struct passwd** result);
+#endif
 JNIEXPORT jbyteArray JNICALL
 Java_sun_nio_fs_UnixNativeDispatcher_getpwuid(JNIEnv* env, jclass this, jint uid)
 {
@@ -1235,7 +1243,16 @@ Java_sun_nio_fs_UnixNativeDispatcher_getpwuid(JNIEnv* env, jclass this, jint uid
         int res = 0;
 
         errno = 0;
+#if defined(__ANDROID__) && __ANDROID_API__ <= 23
+        int deviceApiLevel = android_get_device_api_level();
+        if (deviceApiLevel >= 24) {
+          RESTARTABLE(getpwuid_r((uid_t)uid, &pwent, pwbuf, (size_t)buflen, &p), res);
+        } else {
+          RESTARTABLE(compat_getpwuid_r((uid_t)uid, &pwent, pwbuf, (size_t)buflen, &p), res);
+        }
+#else
         RESTARTABLE(getpwuid_r((uid_t)uid, &pwent, pwbuf, (size_t)buflen, &p), res);
+#endif
 
         if (res != 0 || p == NULL || p->pw_name == NULL || *(p->pw_name) == '\0') {
             /* not found or error */
@@ -1256,9 +1273,6 @@ Java_sun_nio_fs_UnixNativeDispatcher_getpwuid(JNIEnv* env, jclass this, jint uid
 }
 
 
-#if defined(__ANDROID__) && __ANDROID_API__ <= 23
-#include <pwd_grp_compat.h>
-#endif
 JNIEXPORT jbyteArray JNICALL
 Java_sun_nio_fs_UnixNativeDispatcher_getgrgid(JNIEnv* env, jclass this, jint gid)
 {
@@ -1283,7 +1297,16 @@ Java_sun_nio_fs_UnixNativeDispatcher_getgrgid(JNIEnv* env, jclass this, jint gid
         }
 
         errno = 0;
-        RESTARTABLE(getgrgid_r((gid_t)gid, &grent, grbuf, (size_t)buflen, &g), res);
+#if defined(__ANDROID__) && __ANDROID_API__ <= 23
+        int deviceApiLevel = android_get_device_api_level();
+        if (deviceApiLevel >= 24) {
+          RESTARTABLE(getgrgid_r((gid_t)gid, &grent, grbuf, (size_t)buflen, &g), res);
+        } else {
+          RESTARTABLE(compat_getgrgid_r((gid_t)gid, &grent, grbuf, (size_t)buflen, &g), res);
+        }
+#else
+          RESTARTABLE(getgrgid_r((gid_t)gid, &grent, grbuf, (size_t)buflen, &g), res);
+#endif
 
         retry = 0;
         if (res != 0 || g == NULL || g->gr_name == NULL || *(g->gr_name) == '\0') {
@@ -1334,7 +1357,16 @@ Java_sun_nio_fs_UnixNativeDispatcher_getpwnam0(JNIEnv* env, jclass this,
         const char* name = (const char*)jlong_to_ptr(nameAddress);
 
         errno = 0;
+#if defined(__ANDROID__) && __ANDROID_API__ <= 23
+        int deviceApiLevel = android_get_device_api_level();
+        if (deviceApiLevel >= 24) {
+          RESTARTABLE(getpwnam_r(name, &pwent, pwbuf, (size_t)buflen, &p), res);
+        } else {
+          RESTARTABLE(compat_getpwnam_r(name, &pwent, pwbuf, (size_t)buflen, &p), res);
+        }
+#else
         RESTARTABLE(getpwnam_r(name, &pwent, pwbuf, (size_t)buflen, &p), res);
+#endif
 
         if (res != 0 || p == NULL || p->pw_name == NULL || *(p->pw_name) == '\0') {
             /* not found or error */
@@ -1378,7 +1410,16 @@ Java_sun_nio_fs_UnixNativeDispatcher_getgrnam0(JNIEnv* env, jclass this,
         }
 
         errno = 0;
+#if defined(__ANDROID__) && __ANDROID_API__ <= 23
+        int deviceApiLevel = android_get_device_api_level();
+        if (deviceApiLevel >= 24) {
+          RESTARTABLE(getgrnam_r(name, &grent, grbuf, (size_t)buflen, &g), res);
+        } else {
+          RESTARTABLE(compat_getgrnam_r(name, &grent, grbuf, (size_t)buflen, &g), res);
+        }
+#else
         RESTARTABLE(getgrnam_r(name, &grent, grbuf, (size_t)buflen, &g), res);
+#endif
 
         retry = 0;
         if (res != 0 || g == NULL || g->gr_name == NULL || *(g->gr_name) == '\0') {
