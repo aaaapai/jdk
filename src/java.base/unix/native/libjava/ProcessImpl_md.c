@@ -618,7 +618,7 @@ spawnChild(JNIEnv *env, jobject process, ChildStuff *c, const char *helperpath) 
     if (deviceApiLevel >= 28) {
       rval = posix_spawn(&resultPid, helperpath, &file_actions, 0, (char * const *) hlpargs, environ);
     } else {
-      rval = simple_posix_spawn(&resultPid, helperpath, &file_actions, 0, (char * const *) hlpargs, environ);
+      rval = simple_posix_spawn(&resultPid, helperpath, (const simple_posix_spawn_file_actions_t*) &file_actions, 0, (char * const *) hlpargs, environ);
     }
 #else
     rval = posix_spawn(&resultPid, helperpath, &file_actions, 0, (char * const *) hlpargs, environ);
