@@ -56,23 +56,9 @@ else ifeq ($(call isCompiler, clang), true)
           -Wl,-rpath,\$(DOLLAR)ORIGIN$1
     endif
 
-    ifeq ($(CREATING_BUILDJDK), true)
-      ifeq ($(OPENJDK_BUILD_OS), linux)
-         SetBuildExecutableOrigin = \
-            -Wl,-rpath,\$(DOLLAR)ORIGIN$1 -Wl,--disable-new-dtags
-      endif
-    else
-         SetBuildExecutableOrigin = \
-            -Wl,-rpath,\$(DOLLAR)ORIGIN$1
-    endif
-
-    ifeq ($(call isTargetOs, arm), true)
-      SetSharedLibraryOrigin = \
-          -Wl,-rpath,\$(DOLLAR)ORIGIN$1
-    else
       SetSharedLibraryOrigin = \
           -Wl,-z,origin -Wl,-rpath,\$(DOLLAR)ORIGIN$1
-    endif
+
   endif
 else ifeq ($(call isCompiler, microsoft), true)
   SetExecutableOrigin =
