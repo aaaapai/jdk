@@ -890,12 +890,23 @@ void* os::lookup_function(const char* name) {
   return dlsym(RTLD_DEFAULT, name);
 }
 
+#if defined(__ANDROID__) && __ANDROID_API__ < 24
+#include <compat_file.h>
+#endif
 int64_t os::ftell(FILE* file) {
+#if defined(__ANDROID__) && __ANDROID_API__ < 24
+  return ::compat_ftello(file);
+#else
   return ::ftell(file);
+#endif
 }
 
 int os::fseek(FILE* file, int64_t offset, int whence) {
+#if defined(__ANDROID__) && __ANDROID_API__ < 24
+  return ::compat_fseeko(file, offset, whence);
+#else
   return ::fseek(file, offset, whence);
+#endif
 }
 
 jlong os::lseek(int fd, jlong offset, int whence) {
