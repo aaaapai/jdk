@@ -77,6 +77,11 @@ int CMSEXPORT cmsstrcasecmp(const char* s1, const char* s2)
     return (toupper(*us1) - toupper(*--us2));
 }
 
+#if defined(__ANDROID__) && __ANDROID_API__ < 24
+#include <compat_file.h>
+#define ftell compat_ftello
+#define fseek compat_fseeko
+#endif
 // long int because C99 specifies ftell in such way (7.19.9.2)
 long int CMSEXPORT cmsfilelength(FILE* f)
 {
