@@ -56,8 +56,13 @@ else ifeq ($(call isCompiler, clang), true)
           -Wl,-rpath,\$(DOLLAR)ORIGIN$1
     endif
 
+    ifeq ($(call isTargetOs, arm), true)
+      SetSharedLibraryOrigin = \
+          -Wl,-rpath,\$(DOLLAR)ORIGIN$1
+    else
       SetSharedLibraryOrigin = \
           -Wl,-z,origin -Wl,-rpath,\$(DOLLAR)ORIGIN$1
+    endif
 
   endif
 else ifeq ($(call isCompiler, microsoft), true)
