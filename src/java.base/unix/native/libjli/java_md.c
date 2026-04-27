@@ -577,34 +577,70 @@ SetExecname(char **argv)
 {
     char* exec_path = NULL;
 #if defined(__ANDROID__)
-    char buf[PATH_MAX+1];
-    int len = -1;
+    char original_path[PATH_MAX+1];
+    char copy_path[PATH_MAX+1];
+    char *java_home = getenv("JAVA_HOME");
+    int original_found = 0;
     
-    len = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
+    int len = readlink("/proc/self/exe", original_path, sizeof(original_path)-1);
     if (len > 0) {
-        buf[len] = '\0';
-        exec_path = JLI_StringDup(buf);
-        JLI_TraceLauncher("SetExecname: using /proc/self/exe -> %s\n", exec_path);
-    }
-    
-    if (exec_path == NULL) {
-        char *java_home = getenv("JAVA_HOME");
-        if (java_home != NULL && java_home[0] != '\0') {
-            JLI_Snprintf(buf, sizeof(buf), "%s/bin/java", java_home);
-            if (access(buf, F_OK) == 0) {
-                exec_path = JLI_StringDup(buf);
-                JLI_TraceLauncher("SetExecname: using JAVA_HOME -> %s\n", exec_path);
-            } else {
-                JLI_TraceLauncher("SetExecname: JAVA_HOME set but %s not accessible\n", buf);
-            }
+        original_path[len] = '\0';
+        original_found = 1;
+    } else if (java_home != NULL && java_home[0] != '\0') {
+        JLI_Snprintf(original_path, sizeof(original_path), "%s/bin/java", java_home);
+        if (access(original_path, F_OK) == 0) {
+            original_found = 1;
         }
     }
     
-    if (exec_path == NULL) {
-        exec_path = FindExecName(argv[0]);
-        JLI_TraceLauncher("SetExecname: using FindExecName -> %s\n", exec_path ? exec_path : "NULL");
+    if (!original_found) {
+        const char *tmp = FindExecName(argv[0]);
+        if (tmp != NULL) {
+            JLI_StrNCpy(original_path, tmp, PATH_MAX);
+            original_found = 1;
+        }
     }
- 
+    
+    if (original_found) {
+        char *last_slash = JLI_StrRChr(original_path, '/');
+        if (last_slash != NULL) {
+            size_t dir_len = last_slash - original_path + 1;
+            JLI_StrNCpy(copy_path, original_path, dir_len);
+            JLI_Snprintf(copy_path + dir_len, sizeof(copy_path) - dir_len, "java_safe");
+            
+            struct stat st;
+            if (stat(copy_path, &st) != 0) {
+                FILE *src = fopen(original_path, "rb");
+                if (src != NULL) {
+                    FILE *dst = fopen(copy_path, "wb");
+                    if (dst != NULL) {
+                        char buffer[8192];
+                        size_t bytes;
+                        while ((bytes = fread(buffer, 1, sizeof(buffer), src)) > 0) {
+                            fwrite(buffer, 1, bytes, dst);
+                        }
+                        fclose(dst);
+                        chmod(copy_path, 0755);
+                        JLI_TraceLauncher("Created copy: %s\n", copy_path);
+                    }
+                    fclose(src);
+                }
+            }
+            
+            if (access(copy_path, X_OK) == 0) {
+                exec_path = JLI_StringDup(copy_path);
+                JLI_TraceLauncher("SetExecname: using safe copy %s\n", exec_path);
+            } else {
+                exec_path = JLI_StringDup(original_path);
+                JLI_TraceLauncher("SetExecname: fallback to original %s\n", exec_path);
+            }
+        } else {
+            exec_path = JLI_StringDup(original_path);
+        }
+    } else {
+        exec_path = NULL;
+    }
+
 #elif defined(__linux__)
     const char* self = "/proc/self/exe";
     char buf[PATH_MAX+1];
