@@ -576,70 +576,57 @@ const char*
 SetExecname(char **argv)
 {
     char* exec_path = NULL;
-#if defined(__ANDROID__)
-    char original_path[PATH_MAX+1];
-    char copy_path[PATH_MAX+1];
-    char *java_home = getenv("JAVA_HOME");
-    int original_found = 0;
-    
-    int len = readlink("/proc/self/exe", original_path, sizeof(original_path)-1);
-    if (len > 0) {
-        original_path[len] = '\0';
-        original_found = 1;
-    } else if (java_home != NULL && java_home[0] != '\0') {
-        JLI_Snprintf(original_path, sizeof(original_path), "%s/bin/java", java_home);
-        if (access(original_path, F_OK) == 0) {
-            original_found = 1;
-        }
-    }
-    
-    if (!original_found) {
-        const char *tmp = FindExecName(argv[0]);
-        if (tmp != NULL) {
-            JLI_StrNCpy(original_path, tmp, PATH_MAX);
-            original_found = 1;
-        }
-    }
-    
-    if (original_found) {
-        char *last_slash = JLI_StrRChr(original_path, '/');
-        if (last_slash != NULL) {
-            size_t dir_len = last_slash - original_path + 1;
-            JLI_StrNCpy(copy_path, original_path, dir_len);
-            JLI_Snprintf(copy_path + dir_len, sizeof(copy_path) - dir_len, "java_safe");
-            
-            struct stat st;
-            if (stat(copy_path, &st) != 0) {
-                FILE *src = fopen(original_path, "rb");
-                if (src != NULL) {
-                    FILE *dst = fopen(copy_path, "wb");
-                    if (dst != NULL) {
-                        char buffer[8192];
-                        size_t bytes;
-                        while ((bytes = fread(buffer, 1, sizeof(buffer), src)) > 0) {
-                            fwrite(buffer, 1, bytes, dst);
-                        }
-                        fclose(dst);
-                        chmod(copy_path, 0755);
-                        JLI_TraceLauncher("Created copy: %s\n", copy_path);
-                    }
-                    fclose(src);
-                }
-            }
-            
-            if (access(copy_path, X_OK) == 0) {
-                exec_path = JLI_StringDup(copy_path);
-                JLI_TraceLauncher("SetExecname: using safe copy %s\n", exec_path);
+#if defined(__ANDROID__) //Since both __ANDROID__ and __linux__ are defined, we must let the preprocessor preprocess the __ANDRIOD__ part first
+    char *__java_home = getenv("JAVA_HOME");
+    // From http://hg.openjdk.java.net/mobile/jdk9/jdk/file/17bb8a98d5e3/src/java.base/unix/native/libjli/java_md_solinux.c#l844
+        /* For Android, 'self' would point to /system/bin/app_process
+         * since we are really executing a Dalvik program at this point.
+         * argv[0] points to the Dalvik application name and we set the
+         * path to __java_home.
+         */
+        char buf[PATH_MAX+1];
+        char *p = NULL;
+       if ((p = JLI_StrRChr(argv[0], '/')) != 0) {
+         /* may be running from command line */
+         p++;
+         if ((JLI_StrLen(p) == 4) && JLI_StrCmp(p, "java") == 0) {
+           /* started as 'java'. Must be command line */
+           JLI_TraceLauncher("SetExecName maybe command line = %s\n", argv[0]);
+         if (*argv[0] != '/') {
+            char *curdir = NULL;
+            /* get absolute path */
+              getcwd(buf, PATH_MAX);
+             curdir = JLI_StringDup(buf);
+              JLI_Snprintf(buf, PATH_MAX, "%s/%s", curdir, argv[0]);
+              JLI_MemFree(curdir);
             } else {
-                exec_path = JLI_StringDup(original_path);
-                JLI_TraceLauncher("SetExecname: fallback to original %s\n", exec_path);
+              JLI_Snprintf(buf, PATH_MAX, "%s", argv[0]);
             }
+          } else {
+            /* Not command line, see if __java_home set */
+            if (__java_home != NULL) {
+              JLI_TraceLauncher("SetExecName not java = %s\n", __java_home);
+              JLI_Snprintf(buf, PATH_MAX, "%s/bin/java", __java_home);
+            } else {
+              /* Fake it as best we can or should we punt? */
+              JLI_TraceLauncher("SetExecName fake it = %s\n", argv[0]);
+              JLI_Snprintf(buf, PATH_MAX, "/data/data/%s/storage/jvm/bin/java",
+                           argv[0]);
+            }
+          }
         } else {
-            exec_path = JLI_StringDup(original_path);
+           /* Not started as 'java', see if __java_home set */
+            if (__java_home != NULL) {
+              JLI_TraceLauncher("SetExecName not command line = %s\n", __java_home);
+              JLI_Snprintf(buf, PATH_MAX, "%s/bin/java", __java_home);
+           } else {
+             /* Fake it as best we can or should we punt? */
+             JLI_TraceLauncher("SetExecName fake it 2 = %s\n", argv[0]);
+             JLI_Snprintf(buf, PATH_MAX, "/data/data/%s/storage/jvm/bin/java",
+                           argv[0]);
+            }
         }
-    } else {
-        exec_path = NULL;
-    }
+        exec_path = JLI_StringDup(buf);
 
 #elif defined(__linux__)
     const char* self = "/proc/self/exe";
