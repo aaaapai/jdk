@@ -39,7 +39,7 @@ ifeq ($(call isCompiler, gcc), true)
   SetSharedLibraryOrigin = \
       -Wl,-z,origin -Wl,-rpath,\$(DOLLAR)ORIGIN$1 -Wl,--disable-new-dtags
 else ifeq ($(call isCompiler, clang), true)
-  ifeq ($(call isTargetOs, macosx), true)
+  ifeq ($(call isTargetOs, macosx ios), true)
     SetExecutableOrigin = \
         -Wl,-rpath,@loader_path$(or $1,/.)
     SetSharedLibraryOrigin = \
