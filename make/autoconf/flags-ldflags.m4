@@ -73,7 +73,7 @@ AC_DEFUN([FLAGS_SETUP_LDFLAGS_HELPER],
     LDFLAGS_LTO="-flto=auto -fuse-linker-plugin -fno-strict-aliasing $DEBUG_PREFIX_CFLAGS"
     LDFLAGS_CXX_PARTIAL_LINKING="$MACHINE_FLAG -r"
 
-    if test "x$OPENJDK_TARGET_OS" = xlinux || test "x$OPENJDK_TARGET_OS" = xandroid; then
+    if test "x$OPENJDK_TARGET_OS" = xlinux; then
       BASIC_LDFLAGS="-fuse-ld=lld -Wl,--exclude-libs,ALL"
       if test "x$OPENJDK_TARGET_OS" = xlinux; then
         if test "x$CXX_IS_USER_SUPPLIED" = xfalse && test "x$CC_IS_USER_SUPPLIED" = xfalse; then
