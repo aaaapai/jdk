@@ -196,7 +196,7 @@ ifeq ($(ENABLE_HEADLESS_ONLY), false)
 
   LIBSPLASHSCREEN_CFLAGS += -DSPLASHSCREEN
 
-  ifeq ($(call isTargetOs, macosx), true)
+  ifeq ($(call isTargetOs, macosx ios), true)
     # libsplashscreen on macosx does not use the unix code
     LIBSPLASHSCREEN_EXCLUDE_SRC_PATTERNS := /unix/
 
@@ -209,7 +209,7 @@ ifeq ($(ENABLE_HEADLESS_ONLY), false)
     BUILD_LIBSPLASHSCREEN_splashscreen_sys.m_CFLAGS := -O0
   endif
 
-  ifeq ($(call isTargetOs, macosx), true)
+  ifeq ($(call isTargetOs, macosx ios), true)
     LIBSPLASHSCREEN_CFLAGS += -DWITH_MACOSX
   else ifeq ($(call isTargetOs, windows), true)
     LIBSPLASHSCREEN_CFLAGS += -DWITH_WIN32
@@ -375,7 +375,7 @@ endif
 
 ifeq ($(call isTargetOs, windows), true)
   LIBFONTMANAGER_EXCLUDE_FILES += X11FontScaler.c X11TextRenderer.c
-else ifeq ($(call isTargetOs, macosx), true)
+else ifeq ($(call isTargetOs, macosx ios), true)
   LIBFONTMANAGER_EXCLUDE_FILES += X11FontScaler.c X11TextRenderer.c \
       fontpath.c lcdglyph.c
 else
