@@ -81,7 +81,7 @@ ifeq ($(call isTargetOs, linux android), true)
     $(foreach s, $(NONPIC_SRC), $(eval BUILD_LIBJVM_$(notdir $s)_CXXFLAGS := -fno-PIC))
   endif
 
-else ifeq ($(call isTargetOs, macosx), true)
+else ifeq ($(call isTargetOs, macosx ios), true)
   # The copied fdlibm routines in these files must not be optimized
   BUILD_LIBJVM_sharedRuntimeTrig.cpp_CXXFLAGS := $(FDLIBM_CFLAGS) $(LIBJVM_FDLIBM_COPY_OPT_FLAG)
   BUILD_LIBJVM_sharedRuntimeTrans.cpp_CXXFLAGS := $(FDLIBM_CFLAGS) $(LIBJVM_FDLIBM_COPY_OPT_FLAG)
