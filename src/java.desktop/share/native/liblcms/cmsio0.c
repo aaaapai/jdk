@@ -421,7 +421,7 @@ cmsUInt32Number FileTell(cmsIOHANDLER* iohandler)
         cmsSignalError(iohandler->ContextID, cmsERROR_FILE, "Tell error; probably corrupted file");
         return 0;
     }
-#endif
+
     return (cmsUInt32Number) t;
 }
 
