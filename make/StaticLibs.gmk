@@ -53,7 +53,7 @@ STATIC_LIB_MODULES := $(sort $(patsubst $(SUPPORT_OUTPUTDIR)/modules_static-libs
 
 # Filter out known broken libraries. This is a temporary measure until
 # proper support for these libraries can be provided.
-ifeq ($(call isTargetOs, linux), true)
+ifeq ($(call isTargetOs, linux android), true)
   # libsplashscreen has a name conflict with libawt in the function
   # BitmapToYXBandedRectangles, so we exclude it for now.
   BROKEN_STATIC_LIBS += splashscreen

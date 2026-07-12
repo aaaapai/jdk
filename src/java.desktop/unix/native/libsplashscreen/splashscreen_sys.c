@@ -65,7 +65,11 @@ char* SplashConvertStringAlloc(const char* in, int* size) {
     }
     old_locale = setlocale(LC_ALL, "");
 
+#ifdef __BIONIC__
+    codeset = "UTF-8";
+#else
     codeset = nl_langinfo(CODESET);
+#endif
     if ( codeset == NULL || codeset[0] == 0 ) {
         goto done;
     }

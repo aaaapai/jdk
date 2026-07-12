@@ -53,7 +53,7 @@ define CreateDebugSymbols
           $1_DEBUGINFO_FILES := $$($1_SYMBOLS_DIR)/$$($1_BASENAME).pdb \
               $$($1_SYMBOLS_DIR)/$$($1_BASENAME).map
           $1_DEBUGINFO_ZIP := $$($1_SYMBOLS_DIR)/$$($1_BASENAME).diz
-        else ifeq ($(call isTargetOs, macosx), true)
+        else ifeq ($(call isTargetOs, macosx ios), true)
           $1_DEBUGINFO_FILES := \
               $$($1_SYMBOLS_DIR)/$$($1_BASENAME).dSYM/Contents/Info.plist \
               $$($1_SYMBOLS_DIR)/$$($1_BASENAME).dSYM/Contents/Resources/DWARF/$$($1_BASENAME)

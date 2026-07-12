@@ -377,6 +377,9 @@ cmsUInt32Number FileRead(cmsIOHANDLER* iohandler, void *Buffer, cmsUInt32Number 
     return nReaded;
 }
 
+#if defined(__ANDROID__) && __ANDROID_API__ < 24
+#include <compat_file.h>
+#endif
 // Position file pointer in the file
 static
 cmsBool  FileSeek(cmsIOHANDLER* iohandler, cmsUInt32Number offset)
@@ -413,6 +416,7 @@ cmsUInt32Number FileTell(cmsIOHANDLER* iohandler)
     }
 #else
     long t = ftell((FILE*)iohandler ->stream);
+#endif
     if (t == -1L) {
         cmsSignalError(iohandler->ContextID, cmsERROR_FILE, "Tell error; probably corrupted file");
         return 0;

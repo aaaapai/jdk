@@ -54,6 +54,11 @@
 
 #include "lcms2_internal.h"
 
+#if defined(__ANDROID__) && __ANDROID_API__ < 24
+#include <compat_file.h>
+#define ftell compat_ftello
+#define fseek compat_fseeko
+#endif
 
 // This function is here to help applications to prevent mixing lcms versions on header and shared objects.
 int CMSEXPORT cmsGetEncodedCMMversion(void)

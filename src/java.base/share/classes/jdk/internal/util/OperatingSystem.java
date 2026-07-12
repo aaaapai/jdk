@@ -91,7 +91,7 @@ public enum OperatingSystem {
      */
     @ForceInline
     public static boolean isLinux() {
-        return PlatformProps.TARGET_OS_IS_LINUX;
+        return (PlatformProps.TARGET_OS_IS_LINUX || PlatformProps.TARGET_OS_IS_ANDROID);
     }
 
     /**
@@ -99,7 +99,7 @@ public enum OperatingSystem {
      */
     @ForceInline
     public static boolean isMacOS() {
-        return PlatformProps.TARGET_OS_IS_MACOS;
+        return (PlatformProps.TARGET_OS_IS_MACOS || PlatformProps.TARGET_OS_IS_IOS);
     }
 
     /**

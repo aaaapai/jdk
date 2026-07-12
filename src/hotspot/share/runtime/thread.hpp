@@ -657,7 +657,7 @@ inline Thread* Thread::current() {
 }
 
 inline Thread* Thread::current_or_null() {
-  return _thr_current;
+    return _thr_current;
 }
 
 inline Thread* Thread::current_or_null_safe() {
