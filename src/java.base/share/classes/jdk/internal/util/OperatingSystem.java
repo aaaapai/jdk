@@ -81,6 +81,14 @@ public enum OperatingSystem {
      * The AIX Operating system.
      */
     AIX,
+    /**
+     * The ANDROID Operating system.
+     */
+    ANDROID,
+    /**
+     * The IOS Operating system.
+     */
+    IOS,
     ;
 
     // The current OperatingSystem
