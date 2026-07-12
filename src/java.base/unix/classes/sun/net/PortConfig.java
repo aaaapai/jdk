@@ -44,12 +44,10 @@ public final class PortConfig {
         int defaultUpper;
         int defaultLower;
         switch (OperatingSystem.current()) {
-            case ANDROID:
             case LINUX:
                 defaultLower = 32768;
                 defaultUpper = 61000;
                 break;
-            case IOS:
             case MACOS:
                 defaultLower = 49152;
                 defaultUpper = 65535;
