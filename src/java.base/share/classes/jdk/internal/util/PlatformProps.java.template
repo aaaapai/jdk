@@ -32,7 +32,7 @@ package jdk.internal.util;
 class PlatformProps {
 
     // Name of the current OperatingSystem enum as substituted by the build
-    static final String CURRENT_OS_STRING = "@@OPENJDK_TARGET_OS@@";
+    static final String CURRENT_OS_STRING = ("@@OPENJDK_TARGET_OS@@" == "android") ? "linux" : ("@@OPENJDK_TARGET_OS@@" == "ios")   ? "macos" : "@@OPENJDK_TARGET_OS@@";
 
     // Precomputed booleans for each Operating System
     static final boolean TARGET_OS_IS_LINUX   = ("@@OPENJDK_TARGET_OS@@" == "linux" || "@@OPENJDK_TARGET_OS@@" == "android");
