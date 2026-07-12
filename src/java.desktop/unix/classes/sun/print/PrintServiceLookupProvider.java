@@ -135,14 +135,6 @@ public final class PrintServiceLookupProvider extends PrintServiceLookup
         }
     }
 
-    static boolean isiOS() {
-        return OSInfo.getOSType() == OSInfo.OSType.IOS;
-    }
-
-    static boolean isAndroid() {
-        return OSInfo.getOSType() == OSInfo.OSType.ANDROID;
-    }
-
     static boolean isMac() {
         return OSInfo.getOSType() == OSInfo.OSType.MACOSX;
     }
