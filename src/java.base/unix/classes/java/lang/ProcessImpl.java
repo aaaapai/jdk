@@ -98,7 +98,7 @@ final class ProcessImpl extends Process {
         try {
             // Should be value of a LaunchMechanism enum
             String launchMechanism = s.toUpperCase(Locale.ROOT);
-            if (launchMechanism.equals("VFORK") && (OperatingSystem.isLinux() || OperatingSystem.isAndroid())) {
+            if (launchMechanism.equals("VFORK") && OperatingSystem.isLinux()) {
                 launchMechanism = "FORK";
                 System.err.println(String.format("""
                                    The VFORK launch mechanism has been removed. Switching to %s instead.
@@ -116,7 +116,7 @@ final class ProcessImpl extends Process {
 
     private static final LaunchMechanism launchMechanism = launchMechanism();
     private static String getJspawnhelperName() {
-    if (OperatingSystem.isAndroid()) {
+    if (OperatingSystem.isLinux()) {
            return "libjspawnhelper.so";
        } else {
            return "jspawnhelper";
@@ -317,8 +317,6 @@ final class ProcessImpl extends Process {
      */
     void initStreams(int[] fds, boolean forceNullOutputStream) throws IOException {
         switch (OperatingSystem.current()) {
-            case IOS:
-            case ANDROID:
             case LINUX:
             case MACOS:
                 stdin = (fds[0] == -1) ?
@@ -451,8 +449,6 @@ final class ProcessImpl extends Process {
 
     private void destroy(boolean force) {
         switch (OperatingSystem.current()) {
-            case IOS:
-            case ANDROID:
             case LINUX:
             case MACOS:
             case AIX:
