@@ -81,14 +81,6 @@ public enum OperatingSystem {
      * The AIX Operating system.
      */
     AIX,
-    /**
-     * The ANDROID Operating system.
-     */
-    ANDROID,
-    /**
-     * The IOS Operating system.
-     */
-    IOS,
     ;
 
     // The current OperatingSystem
@@ -99,7 +91,7 @@ public enum OperatingSystem {
      */
     @ForceInline
     public static boolean isLinux() {
-        return (PlatformProps.TARGET_OS_IS_LINUX);
+        return PlatformProps.TARGET_OS_IS_LINUX;
     }
 
     /**
@@ -107,7 +99,7 @@ public enum OperatingSystem {
      */
     @ForceInline
     public static boolean isMacOS() {
-        return (PlatformProps.TARGET_OS_IS_MACOS);
+        return PlatformProps.TARGET_OS_IS_MACOS;
     }
 
     /**
