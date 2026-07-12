@@ -47,6 +47,12 @@ private:
   bool pd_get_top_frame(frame* fr_addr, void* ucontext, bool isInJava);
 public:
 
+#if !defined(__ANDROID__) || (defined(__ANDROID__) && __ANDROID_API__ >= 32)
   static Thread *aarch64_get_thread_helper();
+#else
+  static Thread *aarch64_get_thread_helper() {
+    return Thread::current();
+  }
+#endif
 
 #endif // OS_CPU_LINUX_AARCH64_JAVATHREAD_LINUX_AARCH64_HPP

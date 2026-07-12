@@ -40,6 +40,8 @@ public class OSInfo {
         WINDOWS,
         LINUX,
         MACOSX,
+        ANDROID,
+        IOS,
         AIX,
         UNKNOWN
     }
@@ -96,6 +98,8 @@ public class OSInfo {
             case WINDOWS -> WINDOWS;
             case LINUX -> LINUX;
             case MACOS -> MACOSX;
+            case ANDROID -> ANDROID;
+            case IOS -> IOS;
             case AIX -> AIX;
             default -> UNKNOWN;
         };

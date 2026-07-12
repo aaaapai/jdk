@@ -99,6 +99,11 @@ define SetupCompilePropertiesBody
       $$(subst /$(OPENJDK_TARGET_OS_TYPE)/classes,, \
       $$(subst /share/classes,, $$($1_SRC_FILES))))))
 
+ifeq ($(call isTargetOs, android), true)
+  # Also strip /linux/classes if present
+  $1_JAVAS := $$(subst /linux/classes,, $$($1_JAVAS))
+endif
+
   # Generate the package dirs for the to be generated java files. Sort to remove
   # duplicates.
   $1_DIRS := $$(sort $$(dir $$($1_JAVAS)))

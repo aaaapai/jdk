@@ -39,6 +39,9 @@ import sun.util.logging.PlatformLogger;
  */
 public final class FontUtilities {
 
+    public static boolean isiOS;
+    public static boolean isAndroid;
+
     public static boolean isLinux;
 
     public static boolean isMacOSX;
@@ -59,6 +62,9 @@ public final class FontUtilities {
 
     @SuppressWarnings("deprecation") // PlatformLogger.setLevel is deprecated.
     private static void initStatic() {
+
+        isiOS = OSInfo.getOSType() == OSInfo.OSType.IOS;
+        isAndroid = OSInfo.getOSType() == OSInfo.OSType.ANDROID;
 
         isLinux = OSInfo.getOSType() == OSInfo.OSType.LINUX;
 
