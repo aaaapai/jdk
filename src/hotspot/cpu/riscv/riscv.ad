@@ -1010,6 +1010,7 @@ definitions %{
 
 source_hpp %{
 
+#include "c2_MacroAssembler_riscv.hpp"
 #include "asm/macroAssembler.hpp"
 #include "gc/shared/barrierSetAssembler.hpp"
 #include "gc/shared/cardTable.hpp"

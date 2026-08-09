@@ -27,6 +27,7 @@
 
 #include "dict2.hpp"
 #include "opto/adlcVMDeps.hpp"
+#include <cstdint>
 
 // FORMS.HPP - ADL Parser Generic and Utility Forms Classes
 

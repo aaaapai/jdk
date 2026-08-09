@@ -31,7 +31,7 @@ include LibCommon.gmk
 ## Build libsaproc
 ################################################################################
 
-ifeq ($(call isTargetOs, macosx), true)
+ifeq ($(call isTargetOs, macosx ios), true)
   LIBSAPROC_CFLAGS := -D_GNU_SOURCE -mno-omit-leaf-frame-pointer \
       -mstack-alignment=16 -fPIC
   LIBSAPROC_EXTRA_SRC := $(SUPPORT_OUTPUTDIR)/gensrc/jdk.hotspot.agent
@@ -49,7 +49,7 @@ else ifeq ($(call isTargetOs, windows), true)
   endif
 endif
 
-ifeq ($(call isTargetOs, linux), true)
+ifeq ($(call isTargetOs, linux android), true)
   LIBSAPROC_LINK_TYPE := C++
 else
   LIBSAPROC_LINK_TYPE := C

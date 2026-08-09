@@ -44,10 +44,14 @@ AC_DEFUN_ONCE([LIB_SETUP_STD_LIBS],
       [with_stdc__lib=default]
   )
 
-  if test "x$OPENJDK_TARGET_OS" = xlinux; then
+  if test "x$OPENJDK_TARGET_OS" = xlinux || test "x$OPENJDK_TARGET_OS" = xandroid; then
     # Test if stdc++ can be linked statically.
     AC_MSG_CHECKING([if static link of stdc++ is possible])
-    STATIC_STDCXX_FLAGS="-static-libstdc++ -static-libgcc"
+    if test "x$OPENJDK_TARGET_OS" = xlinux; then
+      STATIC_STDCXX_FLAGS="-static-libstdc++ -static-libgcc"
+    else
+      STATIC_STDCXX_FLAGS="-static-libstdc++"
+    fi
     AC_LANG_PUSH(C++)
     OLD_LIBS="$LIBS"
     LIBS="$STATIC_STDCXX_FLAGS"

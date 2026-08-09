@@ -61,11 +61,11 @@ ifeq ($(call isTargetOs, windows), true)
       #
 endif
 
-ifeq ($(call isTargetOs, linux macosx aix), true)
+ifeq ($(call isTargetOs, linux macosx ios aix), true)
   LIBAWT_EXCLUDE_FILES += awt_Font.c CUPSfuncs.c fontpath.c X11Color.c
 endif
 
-ifeq ($(call isTargetOs, macosx), true)
+ifeq ($(call isTargetOs, macosx ios), true)
   LIBAWT_EXCLUDE_FILES += initIDs.c img_colors.c
 endif
 
@@ -417,7 +417,7 @@ else
       #
 endif
 
-ifeq ($(call isTargetOs, macosx), true)
+ifeq ($(call isTargetOs, macosx ios), true)
   # libjawt on macosx does not use the unix code
   LIBJAWT_EXCLUDE_SRC_PATTERNS := /unix/
 endif

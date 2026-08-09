@@ -25,6 +25,8 @@
 #ifndef SHARE_ADLC_ADLARENA_HPP
 #define SHARE_ADLC_ADLARENA_HPP
 
+#include <cstdint>
+
 void* AdlAllocateHeap(size_t size);
 void* AdlReAllocateHeap(void* old_ptr, size_t size);
 

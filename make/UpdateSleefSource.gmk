@@ -43,8 +43,8 @@ ifeq ($(CMAKE), )
   $(error CMake not found. Please install cmake and rerun configure)
 endif
 
-ifneq ($(OPENJDK_BUILD_OS), linux)
-  $(error This target is only supported on linux)
+ifeq ($(filter $(OPENJDK_BUILD_OS), linux android), )
+  $(error This target is only supported on linux or android)
 endif
 
 SLEEF_SUPPORT_DIR := $(MAKESUPPORT_OUTPUTDIR)/sleef

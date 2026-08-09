@@ -22,6 +22,8 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+
+#include <iconv.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -29,7 +31,6 @@
 #include <ctype.h>
 #include <locale.h>
 #include <langinfo.h>
-#include <iconv.h>
 
 /* Routines to convert back and forth between Platform Encoding and UTF-8 */
 
@@ -65,7 +66,11 @@ utfInitialize(void)
     (void)setlocale(LC_ALL, "");
 
     /* Get the codeset name */
+#if defined(__BIONIC__)
+    codeset = "UTF-8";
+#else
     codeset = (char*)nl_langinfo(CODESET);
+#endif
     if ( codeset == NULL || codeset[0] == 0 ) {
         UTF_DEBUG(("NO codeset returned by nl_langinfo(CODESET)\n"));
         return;

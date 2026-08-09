@@ -39,13 +39,14 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBINSTRUMENT, \
     CFLAGS_windows := -Dstrcasecmp=stricmp, \
     CFLAGS_debug := -DJPLIS_LOGGING, \
     CFLAGS_release := -DNO_JPLIS_LOGGING, \
+    CXXFLAGS := $(CXXFLAGS_JDKLIB), \
     LDFLAGS := $(ICONV_LDFLAGS), \
     JDK_LIBS := java.base:libjava java.base:libjli java.base:libjvm, \
     LIBS := $(ICONV_LIBS), \
     LIBS_unix := $(LIBZ_LIBS), \
     LIBS_macosx := \
         -framework ApplicationServices \
-        -framework Cocoa \
+        -framework Foundation \
         -framework Security, \
     LIBS_windows := advapi32.lib, \
 ))
