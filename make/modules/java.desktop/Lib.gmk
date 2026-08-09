@@ -38,7 +38,7 @@ include lib/AwtLibraries.gmk
 include lib/ClientLibraries.gmk
 
 ifeq ($(ENABLE_JSOUND), true)
-  ifeq ($(call isTargetOs, aix), false)
+  ifeq ($(call isTargetOs, aix android), false)
     ##############################################################################
     # Build libjsound
     ##############################################################################

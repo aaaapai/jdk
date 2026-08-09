@@ -47,7 +47,7 @@ ifneq ($(FDLIBM_CFLAGS), )
   LIBJVM_FDLIBM_COPY_OPT_FLAG := $(CXX_O_FLAG_NORM)
 endif
 
-ifeq ($(call isTargetOs, linux), true)
+ifeq ($(call isTargetOs, linux android), true)
   BUILD_LIBJVM_sharedRuntimeTrig.cpp_CXXFLAGS := $(FDLIBM_CFLAGS) $(LIBJVM_FDLIBM_COPY_OPT_FLAG)
   BUILD_LIBJVM_sharedRuntimeTrans.cpp_CXXFLAGS := $(FDLIBM_CFLAGS) $(LIBJVM_FDLIBM_COPY_OPT_FLAG)
 
@@ -57,7 +57,7 @@ ifeq ($(call isTargetOs, linux), true)
       $(OPT_SPEED_SRC) \
       #
 
-  ifeq ($(call isTargetCpu, x86), true)
+  ifeq (true, false)
     # Performance measurements show that by compiling GC related code, we could
     # significantly reduce the GC pause time on 32 bit Linux/Unix platforms by
     # compiling without the PIC flag (-fPIC on linux).
@@ -75,7 +75,7 @@ ifeq ($(call isTargetOs, linux), true)
     $(foreach s, $(NONPIC_SRC), $(eval BUILD_LIBJVM_$(notdir $s)_CXXFLAGS := -fno-PIC))
   endif
 
-else ifeq ($(call isTargetOs, macosx), true)
+else ifeq ($(call isTargetOs, macosx ios), true)
   # The copied fdlibm routines in these files must not be optimized
   BUILD_LIBJVM_sharedRuntimeTrig.cpp_CXXFLAGS := $(FDLIBM_CFLAGS) $(LIBJVM_FDLIBM_COPY_OPT_FLAG)
   BUILD_LIBJVM_sharedRuntimeTrans.cpp_CXXFLAGS := $(FDLIBM_CFLAGS) $(LIBJVM_FDLIBM_COPY_OPT_FLAG)

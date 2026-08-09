@@ -920,6 +920,7 @@ void SharedRuntime::restore_native_result(MacroAssembler *masm, BasicType ret_ty
   }
 }
 
+__attribute__((optnone))
 static void save_args(MacroAssembler *masm, int arg_count, int first_arg, VMRegPair *args) {
   RegSet x;
   for ( int i = first_arg ; i < arg_count ; i++ ) {
