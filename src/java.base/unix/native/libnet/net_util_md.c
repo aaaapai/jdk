@@ -94,20 +94,10 @@ jint  IPv4_supported()
     return JNI_TRUE;
 }
 
-#if defined(DONT_ENABLE_IPV6)
-jint  IPv6_supported()
-{
-    return JNI_FALSE;
-}
-
-#else /* !DONT_ENABLE_IPV6 */
-
 jint  IPv6_supported()
 {
     int fd;
     void *ipv6_fn;
-    SOCKETADDRESS sa;
-    socklen_t sa_len = sizeof(SOCKETADDRESS);
 
 #ifndef __ANDROID__  // ANDROID: skip check, see libcore commit ae218d9b
 
@@ -155,7 +145,6 @@ jint  IPv6_supported()
         return JNI_TRUE;
     }
 }
-#endif /* DONT_ENABLE_IPV6 */
 
 jint reuseport_supported(int ipv6_available)
 {
