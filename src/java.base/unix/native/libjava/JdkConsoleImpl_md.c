@@ -32,6 +32,9 @@
 #include <unistd.h>
 #include <termios.h>
 
+#include <stdio.h>
+int fileno(FILE* _Nonnull __fp);
+
 JNIEXPORT jboolean JNICALL
 Java_jdk_internal_io_JdkConsoleImpl_echo(JNIEnv *env,
                           jclass cls,

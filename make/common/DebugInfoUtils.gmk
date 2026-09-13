@@ -46,7 +46,7 @@ else
   DEBUGINFO_SUFFIXES := .debuginfo .pdb .map
   # On Macosx, if debug symbols have not been zipped, find all files inside *.dSYM
   # dirs.
-  ifeq ($(call isTargetOs, macosx), true)
+  ifeq ($(call isTargetOs, macosx ios), true)
     $(call FillFindCache, \
         $(SUPPORT_OUTPUTDIR)/modules_libs $(SUPPORT_OUTPUTDIR)/modules_cmds)
     FindDebuginfoFiles = \

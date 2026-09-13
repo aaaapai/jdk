@@ -30,7 +30,7 @@ include GensrcCommon.gmk
 ################################################################################
 # Copy the entitlements file for the java launcher to jpackage as a resource.
 
-ifeq ($(call isTargetOs, macosx), true)
+ifeq ($(call isTargetOs, macosx ios), true)
   ENTITLEMENTS_SRC_FILE := $(TOPDIR)/make/data/macosxsigning/java.plist
   ENTITLEMENTS_TARGET_FILE := \
       $(SUPPORT_OUTPUTDIR)/gensrc/$(MODULE)/jdk/jpackage/internal/resources/entitlements.plist

@@ -99,6 +99,8 @@ jint  IPv6_supported()
     int fd;
     void *ipv6_fn;
 
+#ifndef __ANDROID__  // ANDROID: skip check, see libcore commit ae218d9b
+
     fd = socket(AF_INET6, SOCK_STREAM, 0) ;
     if (fd < 0) {
         /*
@@ -129,6 +131,8 @@ jint  IPv6_supported()
         }
     }
 #endif
+
+#endif  // !defined __ANDROID__
 
     /*
      *  OK we may have the stack available in the kernel,

@@ -178,6 +178,12 @@ final class LauncherBuilder {
             case WINDOWS -> {
                 return "JavaApp.ico";
             }
+            case ANDROID -> {
+                return "JavaApp.png";
+            }
+            case IOS -> {
+                return "JavaApp.icns";
+            }
             case LINUX -> {
                 return "JavaApp.png";
             }

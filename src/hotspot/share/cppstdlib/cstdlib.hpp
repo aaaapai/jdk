@@ -75,6 +75,8 @@ using ::calloc;
 #endif // Macro definition for malloc or calloc
 #endif // AIX altivec allocator support
 
+#if !defined(__IOS__) && !defined(__ANDROID__)
+
 // Prefer os:: variants of these.
 FORBID_IMPORTED_NORETURN_C_FUNCTION(void exit(int), noexcept, "use os::exit")
 FORBID_IMPORTED_NORETURN_C_FUNCTION(void _Exit(int), noexcept, "use os::exit")
@@ -102,4 +104,5 @@ FORBID_C_FUNCTION(void* aligned_alloc(size_t, size_t), noexcept, "don't use");
 FORBID_C_FUNCTION(int posix_memalign(void**, size_t, size_t), noexcept, "don't use");
 #endif // !_WINDOWS
 
+#endif
 #endif // SHARE_CPPSTDLIB_CSTDLIB_HPP

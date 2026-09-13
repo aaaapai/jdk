@@ -30,6 +30,14 @@
 #include "utilities/elfFuncDescTable.hpp"
 #include "utilities/elfSymbolTable.hpp"
 
+#ifndef ELF_ST_TYPE
+#if defined(__ANDROID__)
+#include <elf.h>
+#else
+#define ELF_ST_TYPE(info) ((info) & 0xf)
+#endif
+#endif
+
 ElfSymbolTable::ElfSymbolTable(FILE* const file, Elf_Shdr& shdr) :
   _next(nullptr), _fd(file), _section(file, shdr) {
   assert(file != nullptr, "null file handle");

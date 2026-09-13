@@ -93,12 +93,24 @@ size_t FileReader::read_buffer(void* buf, size_t size) {
   return fread(buf, 1, size, _fd);
 }
 
+#if defined(__ANDROID__) && __ANDROID_API__ < 24
+#include <compat_file.h>
+#endif
 bool FileReader::set_position(long offset) {
+#if defined(__ANDROID__) && __ANDROID_API__ < 24
+  return compat_fseeko(_fd, offset, SEEK_SET) == 0;
+#else
   return fseek(_fd, offset, SEEK_SET) == 0;
+#endif
 }
 
+#if defined(__ANDROID__) && __ANDROID_API__ < 24
+MarkedFileReader::MarkedFileReader(FILE* fd) : FileReader(fd), _marked_pos(compat_ftello(fd)) {
+}
+#else
 MarkedFileReader::MarkedFileReader(FILE* fd) : FileReader(fd), _marked_pos(ftell(fd)) {
 }
+#endif
 
 MarkedFileReader::~MarkedFileReader() {
   if (_marked_pos != -1) {
@@ -1884,7 +1896,12 @@ bool DwarfFile::MarkedDwarfFileReader::has_bytes_left() const {
 }
 
 bool DwarfFile::MarkedDwarfFileReader::update_to_stored_position() {
+#if defined(__ANDROID__) && __ANDROID_API__ < 24
+  _marked_pos = compat_ftello(_fd);
+#else
   _marked_pos = ftell(_fd);
+#endif
+
   if (_marked_pos < 0) {
     return false;
   }

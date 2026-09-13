@@ -262,7 +262,7 @@ ifneq ($(filter jdk, $(MAKECMDGOALS)), )
       )
 
   ifeq ($(ZIP_EXTERNAL_DEBUG_SYMBOLS), true)
-    ifeq ($(call isTargetOs, macosx), true)
+    ifeq ($(call isTargetOs, macosx ios), true)
       DEMO_FILES := $(call not-containing, .dSYM, $(DEMO_FILES))
     else
       DEMO_FILES := $(filter-out %.debuginfo %.pdb %.map, $(DEMO_FILES))

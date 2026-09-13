@@ -37,7 +37,7 @@ JPACKAGE_CXXFLAGS_windows := -EHsc $(JPACKAGE_CFLAGS_windows)
 ## Build jpackageapplauncher
 ################################################################################
 
-ifeq ($(call isTargetOs, linux), true)
+ifeq ($(call isTargetOs, linux android), true)
   JPACKAGEAPPLAUNCHER_LINK_TYPE := C
   JPACKAGEAPPLAUNCHER_INCLUDE_FILES := %.c
 else
@@ -65,7 +65,7 @@ $(eval $(call SetupJdkExecutable, BUILD_JPACKAGEAPPLAUNCHER, \
     LD_SET_ORIGIN := false, \
     LDFLAGS_macosx := -rpath @executable_path/../Frameworks/ \
         -rpath @executable_path/../PlugIns/, \
-    LIBS_macosx := -framework Cocoa, \
+    LIBS_macosx := -framework Foundation, \
     LIBS_windows := msi.lib ole32.lib shell32.lib shlwapi.lib user32.lib, \
     LIBS_linux := $(LIBDL) $(LIBPTHREAD), \
     MANIFEST := $(JAVA_MANIFEST), \
@@ -74,7 +74,7 @@ $(eval $(call SetupJdkExecutable, BUILD_JPACKAGEAPPLAUNCHER, \
 
 TARGETS += $(BUILD_JPACKAGEAPPLAUNCHER)
 
-ifeq ($(call isTargetOs, linux), true)
+ifeq ($(call isTargetOs, linux android), true)
   ##############################################################################
   ## Build libjpackageapplauncheraux
   ##############################################################################

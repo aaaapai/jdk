@@ -231,7 +231,7 @@ define SetupLinkerFlags
     $1_EXTRA_LDFLAGS += $(LDFLAGS_LTO)
     # Instruct the ld64 linker not to delete the temporary object file
     # generated during Link Time Optimization
-    ifeq ($(call isTargetOs, macosx), true)
+    ifeq ($(call isTargetOs, macosx ios), true)
       $1_EXTRA_LDFLAGS += -Wl,-object_path_lto,$$($1_OBJECT_DIR)/$$($1_NAME)_lto_helper.o
     endif
     ifeq ($(TOOLCHAIN_TYPE), microsoft)

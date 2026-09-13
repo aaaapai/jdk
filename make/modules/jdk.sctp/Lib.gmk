@@ -27,7 +27,7 @@
 
 include LibCommon.gmk
 
-ifeq ($(call isTargetOs, linux), true)
+ifeq ($(call isTargetOs, linux android), true)
   ##############################################################################
   ## Build libsctp
   ##############################################################################

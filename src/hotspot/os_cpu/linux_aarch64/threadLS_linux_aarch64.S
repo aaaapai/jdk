@@ -28,6 +28,7 @@
         // Clobber x1, flags.
         // All other registers are preserved,
 
+#if defined(__ANDROID__) && __ANDROID_API__ >= 32
 DECLARE_FUNC(_ZN10JavaThread25aarch64_get_thread_helperEv):
         hint #0x19      // paciasp
         stp x29, x30, [sp, -16]!
@@ -44,6 +45,7 @@ DECLARE_FUNC(_ZN10JavaThread25aarch64_get_thread_helperEv):
         ret
 
         .size _ZN10JavaThread25aarch64_get_thread_helperEv, .-_ZN10JavaThread25aarch64_get_thread_helperEv
+#endif
 
 /* Emit .note.gnu.property section in case of PAC or BTI being enabled.
  * For more details see "ELF for the Arm(R) 64-bit Architecture (AArch64)".

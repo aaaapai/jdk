@@ -537,10 +537,12 @@ bool os::Linux::get_tick_information(CPUPerfTicks* pticks, int which_logical_cpu
 
 #ifndef SYS_gettid
 // i386: 224, amd64: 186
-  #if defined(__i386__)
+  #if defined(__i386__) || defined(__arm__)
     #define SYS_gettid 224
   #elif defined(__amd64__)
     #define SYS_gettid 186
+  #elif defined(__arm64__) || defined(__aarch64__)
+    #define SYS_gettid 178
   #else
     #error "Define SYS_gettid for this architecture"
   #endif
@@ -730,16 +732,21 @@ void os::init_system_properties_values() {
 
 void os::Linux::libpthread_init() {
   // Save glibc and pthread version strings.
+#ifndef __BIONIC__
 #if !defined(_CS_GNU_LIBC_VERSION) || \
     !defined(_CS_GNU_LIBPTHREAD_VERSION)
   #error "glibc too old (< 2.3.2)"
 #endif
-
+#endif
+  
 #ifdef MUSL_LIBC
   // confstr() from musl libc returns EINVAL for
   // _CS_GNU_LIBC_VERSION and _CS_GNU_LIBPTHREAD_VERSION
   os::Linux::set_libc_version("musl - unknown");
   os::Linux::set_libpthread_version("musl - unknown");
+#elif defined(__BIONIC__)
+  os::Linux::set_libc_version("bionic - unknown");
+  os::Linux::set_libpthread_version("bionic - unknown");
 #else
   size_t n = confstr(_CS_GNU_LIBC_VERSION, nullptr, 0);
   assert(n > 0, "cannot retrieve glibc version");
@@ -2066,10 +2073,37 @@ const char* os::Linux::dll_path(void* lib) {
   const char* l_path = nullptr;
   assert(lib != nullptr, "dll_path parameter must not be null");
 
+#ifndef __ANDROID__
   int res_dli = ::dlinfo(lib, RTLD_DI_LINKMAP, &lmap);
   if (res_dli == 0) {
     l_path = lmap->l_name;
   }
+#else
+  Dl_info info;
+  if (dladdr(lib, &info) && info.dli_fname) {
+    if (info.dli_fname[0] == '/') {
+      l_path = info.dli_fname;
+    } else {
+      FILE* fp = fopen("/proc/self/maps", "r");
+      if (fp) {
+        char line[256], path[256];
+        uintptr_t start, end;
+        while (fgets(line, sizeof(line), fp)) {
+          if (sscanf(line, "%lx-%lx %*s %*x %*x:%*x %*u %255s", &start, &end, path) == 3) {
+            if ((uintptr_t)lib >= start && (uintptr_t)lib < end) {
+              const char* basename = strrchr(path, '/');
+              if (basename && strcmp(basename + 1, info.dli_fname) == 0) {
+                l_path = os::strdup(path);
+                break;
+              }
+            }
+          }
+        }
+        fclose(fp);
+      }
+    }
+  }
+#endif
   return l_path;
 }
 
@@ -3296,7 +3330,8 @@ void os::Linux::sched_getcpu_init() {
   }
 
   if (sched_getcpu() == -1) {
-    vm_exit_during_initialization("getcpu(2) system call not supported by kernel");
+    //vm_exit_during_initialization("getcpu(2) system call not supported by kernel");
+    warning("getcpu(2) system call not supported by kernel");
   }
 }
 
@@ -3307,7 +3342,11 @@ extern "C" JNIEXPORT void numa_error(char *where) { }
 // Handle request to load libnuma symbol version 1.1 (API v1). If it fails
 // load symbol from base version instead.
 void* os::Linux::libnuma_dlsym(void* handle, const char *name) {
+#ifndef __BIONIC__
   void *f = dlvsym(handle, name, "libnuma_1.1");
+#else
+  void *f = dlsym(handle, name);
+#endif
   if (f == nullptr) {
     f = dlsym(handle, name);
   }
@@ -3317,7 +3356,11 @@ void* os::Linux::libnuma_dlsym(void* handle, const char *name) {
 // Handle request to load libnuma symbol version 1.2 (API v2) only.
 // Return null if the symbol is not defined in this particular version.
 void* os::Linux::libnuma_v2_dlsym(void* handle, const char* name) {
+#ifndef __BIONIC__
   return dlvsym(handle, name, "libnuma_1.2");
+#else
+  return dlsym(handle, name);
+#endif
 }
 
 // Check numa dependent syscalls
@@ -3340,7 +3383,11 @@ static bool numa_syscall_check() {
 bool os::Linux::libnuma_init() {
   // Requires sched_getcpu() and numa dependent syscalls support
   if ((sched_getcpu() != -1) && numa_syscall_check()) {
+#ifdef __ANDROID__
+    void *handle = dlopen("libnuma.so", RTLD_LOCAL|RTLD_LAZY);
+#else
     void *handle = dlopen("libnuma.so.1", RTLD_LAZY);
+#endif
     if (handle != nullptr) {
       set_numa_node_to_cpus(CAST_TO_FN_PTR(numa_node_to_cpus_func_t,
                                            libnuma_dlsym(handle, "numa_node_to_cpus")));
@@ -4629,7 +4676,8 @@ void os::init(void) {
   check_pax();
 
   // Check the availability of MADV_POPULATE_WRITE.
-  FLAG_SET_DEFAULT(UseMadvPopulateWrite, (::madvise(nullptr, 0, MADV_POPULATE_WRITE) == 0));
+  char dummy_check = 0;
+  FLAG_SET_DEFAULT(UseMadvPopulateWrite, (::madvise(&dummy_check, 0, MADV_POPULATE_WRITE) == 0));
 
   os::Posix::init();
 }
@@ -5227,7 +5275,20 @@ bool os::is_thread_cpu_time_supported() {
 // Linux doesn't yet have a (official) notion of processor sets,
 // so just return the system wide load average.
 int os::loadavg(double loadavg[], int nelem) {
-  return ::getloadavg(loadavg, nelem);
+#if defined(__ANDROID__) && __ANDROID_API__ < 29
+  if (nelem < 0) return -1;
+  if (nelem > 3) nelem = 3;
+
+  struct sysinfo si;
+  if (sysinfo(&si) == -1) return -1;
+
+  for (int i = 0; i < nelem; ++i) {
+    loadavg[i] = (double)(si.loads[i]) / (double)(1 << SI_LOAD_SHIFT);
+  }
+  return nelem;
+#else
+   return ::getloadavg(loadavg, nelem);
+#endif
 }
 
 // Get the default path to the core file

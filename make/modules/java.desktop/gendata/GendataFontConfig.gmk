@@ -29,6 +29,12 @@ ifeq ($(INCLUDE), true)
 ################################################################################
 
 FONTCONFIG_DATA_DIR := $(MODULE_SRC)/$(OPENJDK_TARGET_OS)/data/fontconfig
+ifeq ($(OPENJDK_TARGET_OS), android)
+  FONTCONFIG_DATA_DIR := $(MODULE_SRC)/linux/data/fontconfig
+else ifeq ($(OPENJDK_TARGET_OS), ios)
+  FONTCONFIG_DATA_DIR := $(MODULE_SRC)/macosx/data/fontconfig
+endif
+
 FONTCONFIG_SRC_FILE := $(FONTCONFIG_DATA_DIR)/fontconfig.properties
 
 FONTCONFIG_DEST_DIR := $(SUPPORT_OUTPUTDIR)/modules_libs/$(MODULE)

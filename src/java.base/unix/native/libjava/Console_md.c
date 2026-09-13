@@ -30,6 +30,9 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdio.h>
+int fileno(FILE* _Nonnull __fp);
+
 
 JNIEXPORT jint JNICALL
 Java_java_io_Console_ttyStatus(JNIEnv *env, jclass cls)

@@ -42,6 +42,9 @@ CHARSET_TEMPLATES := \
 CHARSET_STANDARD_JAVA_TEMPLATES := \
     $(TOPDIR)/src/java.base/share/classes/sun/nio/cs/StandardCharsets.java.template
 CHARSET_STANDARD_OS := stdcs-$(OPENJDK_TARGET_OS)
+ifeq ($(OPENJDK_TARGET_OS), android)
+  CHARSET_STANDARD_OS := stdcs-linux
+endif
 
 $(CHARSET_DONE_BASE)-stdcs: $(CHARSET_DATA_DIR)/charsets \
     $(wildcard $(CHARSET_DATA_DIR)/$(CHARSET_STANDARD_OS)) \

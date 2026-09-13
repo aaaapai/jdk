@@ -98,7 +98,7 @@ final class ProcessImpl extends Process {
         try {
             // Should be value of a LaunchMechanism enum
             String launchMechanism = s.toUpperCase(Locale.ROOT);
-            if (launchMechanism.equals("VFORK") && OperatingSystem.isLinux()) {
+            if (launchMechanism.equals("VFORK") && (OperatingSystem.isLinux() || OperatingSystem.isAndroid())) {
                 launchMechanism = "FORK";
                 System.err.println(String.format("""
                                    The VFORK launch mechanism has been removed. Switching to %s instead.
@@ -115,7 +115,14 @@ final class ProcessImpl extends Process {
     }
 
     private static final LaunchMechanism launchMechanism = launchMechanism();
-    private static final byte[] helperpath = toCString(StaticProperty.javaHome() + "/lib/jspawnhelper");
+    private static String getJspawnhelperName() {
+    if (OperatingSystem.isAndroid()) {
+           return "libjspawnhelper.so";
+       } else {
+           return "jspawnhelper";
+       }
+    }
+    private static final byte[] helperpath = toCString(StaticProperty.javaHome() + "/lib/" + getJspawnhelperName());
 
     private static byte[] toCString(String s) {
         if (s == null)
@@ -310,6 +317,8 @@ final class ProcessImpl extends Process {
      */
     void initStreams(int[] fds, boolean forceNullOutputStream) throws IOException {
         switch (OperatingSystem.current()) {
+            case IOS:
+            case ANDROID:
             case LINUX:
             case MACOS:
                 stdin = (fds[0] == -1) ?
@@ -442,6 +451,8 @@ final class ProcessImpl extends Process {
 
     private void destroy(boolean force) {
         switch (OperatingSystem.current()) {
+            case IOS:
+            case ANDROID:
             case LINUX:
             case MACOS:
             case AIX:

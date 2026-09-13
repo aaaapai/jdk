@@ -33,7 +33,7 @@ ifeq ($(INCLUDE_COMPILER2), true)
   ## Build libjsvml
   ##############################################################################
 
-  ifeq ($(call isTargetOs, linux windows)+$(call isTargetCpu, x86_64), true+true)
+  ifeq ($(call isTargetOs, linux windows android)+$(call isTargetCpu, x86_64), true+true)
     $(eval $(call SetupJdkLibrary, BUILD_LIBJSVML, \
         NAME := jsvml, \
         LDFLAGS_windows := -defaultlib:msvcrt, \
@@ -46,7 +46,7 @@ ifeq ($(INCLUDE_COMPILER2), true)
   ## Build libsleef
   ##############################################################################
 
-  ifeq ($(call isTargetOs, linux macosx)+$(call isTargetCpu, aarch64 riscv64), true+true)
+  ifeq ($(call isTargetOs, linux macosx android)+$(call isTargetCpu, aarch64 riscv64), true+true)
     ifeq ($(call isTargetCpu, riscv64), true)
       LIBSLEEF_CFLAGS := -march=rv64gcv
     endif

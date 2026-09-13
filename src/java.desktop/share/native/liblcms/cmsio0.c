@@ -413,11 +413,11 @@ cmsUInt32Number FileTell(cmsIOHANDLER* iohandler)
     }
 #else
     long t = ftell((FILE*)iohandler ->stream);
+#endif
     if (t == -1L) {
         cmsSignalError(iohandler->ContextID, cmsERROR_FILE, "Tell error; probably corrupted file");
         return 0;
     }
-#endif
     return (cmsUInt32Number) t;
 }
 

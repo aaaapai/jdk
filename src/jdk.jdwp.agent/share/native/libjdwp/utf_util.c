@@ -483,7 +483,11 @@ static int iconvConvert(conv_direction drn, char *bytes, size_t len, char *outpu
         // locale is not initialized, do it now
         if (setlocale(LC_ALL, "") != NULL) {
             // nl_langinfo returns ANSI_X3.4-1968 by default
+#ifdef __BIONIC__
+            codeset = "UTF-8";
+#else
             codeset = (char*)nl_langinfo(CODESET);
+#endif
         }
 
         if (codeset == NULL) {

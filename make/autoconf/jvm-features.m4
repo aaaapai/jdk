@@ -296,6 +296,7 @@ AC_DEFUN_ONCE([JVM_FEATURES_CHECK_ZGC],
     AC_MSG_CHECKING([if platform is supported by ZGC])
     if test "x$OPENJDK_TARGET_CPU" = "xx86_64"; then
       if test "x$OPENJDK_TARGET_OS" = "xlinux" || \
+          test "x$OPENJDK_TARGET_OS" = "xandroid" || \
           test "x$OPENJDK_TARGET_OS" = "xwindows" || \
           test "x$OPENJDK_TARGET_OS" = "xmacosx"; then
         AC_MSG_RESULT([yes])
@@ -306,6 +307,7 @@ AC_DEFUN_ONCE([JVM_FEATURES_CHECK_ZGC],
     elif test "x$OPENJDK_TARGET_CPU" = "xaarch64"; then
       if test "x$OPENJDK_TARGET_OS" = "xlinux" || \
           test "x$OPENJDK_TARGET_OS" = "xwindows" || \
+          test "x$OPENJDK_TARGET_OS" = "xandroid" || \
           test "x$OPENJDK_TARGET_OS" = "xmacosx"; then
         AC_MSG_RESULT([yes])
       else

@@ -528,6 +528,20 @@ typedef FcStrList* (*FcConfigGetCacheDirsFuncType)(FcConfig *config);
 typedef FcChar8* (*FcStrListNextFuncType)(FcStrList *list);
 typedef FcChar8* (*FcStrListDoneFuncType)(FcStrList *list);
 
+#ifdef __IOS__
+// mod: fallback directories
+static char **getFallbackFontLocations() {
+
+    char **fontdirs = (char**)calloc(3, sizeof(char*));
+    fontdirs[0] = (char *)calloc(1, 4096);
+    fontdirs[1] = (char *)calloc(1, 40);
+    sprintf(fontdirs[0], "%s/lib/fonts", getenv("JAVA_HOME"));
+    sprintf(fontdirs[1], "%s", "/System/Library/Fonts/UnicodeSupport");
+    return fontdirs;
+
+}
+#endif
+
 static char **getFontConfigLocations() {
 
     char **fontdirs;
@@ -549,7 +563,11 @@ static char **getFontConfigLocations() {
     void* libfontconfig = openFontConfig();
 
     if (libfontconfig == NULL) {
+#ifdef __IOS__
+        return getFallbackFontLocations(); // original: NULL
+#else
         return NULL;
+#endif
     }
 
     FcPatternBuild     =

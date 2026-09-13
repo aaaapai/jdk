@@ -115,7 +115,7 @@ AC_DEFUN([FLAGS_SETUP_SVE],
 [
   AARCH64_SVE_AVAILABLE=false
   # Apple Silicon does not support SVE; use macOS as a proxy for that check.
-  if test "x$OPENJDK_TARGET_CPU" = "xaarch64" && test "x$OPENJDK_TARGET_OS" = "xlinux"; then
+  if test "x$OPENJDK_TARGET_CPU" = "xaarch64" && (test "x$OPENJDK_TARGET_OS" = "xlinux" || test "x$OPENJDK_TARGET_OS" = "xandroid"); then
     if test "x$TOOLCHAIN_TYPE" = xgcc || test "x$TOOLCHAIN_TYPE" = xclang; then
       # check the compiler and binutils support sve or not
       AC_MSG_CHECKING([if Arm SVE ACLE is supported])
